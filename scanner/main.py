@@ -19,11 +19,11 @@ def process_frame(frame, key: RsaKey) -> None:
         show_frame(frame)
         return
     is_verified = crypto.verify_message(decoded[0], decoded[1], key)
-    frame_to_show = frame
-    if is_verified:
-        frame_to_show = cv2.polylines(
-            frame, [data[1].astype(int)], True, (0, 255, 0), 8)
-    show_frame(frame_to_show)
+    if not is_verified:
+        show_frame(frame)
+        return
+    show_frame(cv2.polylines(
+            frame, [data[1].astype(int)], True, (0, 255, 0), 8))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

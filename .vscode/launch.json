@@ -5,10 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run",
+            "name": "Run generator",
             "type": "python",
             "request": "launch",
-            "program": "main.py",
+            "program": "generator/main.py",
+            "args": ["Architects", "data/qr.png", "--public_key", "data/public.pem", "--private_key", "data/private.pem"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Run scanner",
+            "type": "python",
+            "request": "launch",
+            "program": "scanner/main.py",
+            "args": ["data/qr.png", "data/public.pem"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

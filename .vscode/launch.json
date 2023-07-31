@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "generator/main.py",
-            "args": ["Architects", "data/qr.png", "--public_key", "data/public.pem", "--private_key", "data/private.pem"],
+            "args": ["Architects", "data/codes", "10", "--public_key", "data/public.pem", "--private_key", "data/private.pem"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -18,7 +18,7 @@
             "type": "python",
             "request": "launch",
             "program": "scanner/main.py",
-            "args": ["data/qr.png", "data/public.pem"],
+            "args": ["data/codes/Architects", "data/public.pem"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

@@ -1,9 +1,7 @@
 import crypto
 import qr
 import argparse
-import os
 from Crypto.PublicKey.RSA import RsaKey
-import cv2
 
 
 def print_verification(arg: tuple[str, bytes] | None, key: RsaKey) -> None:

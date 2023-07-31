@@ -1,24 +1,22 @@
 import base64
-from typing import Callable
+from typing import Any, Callable
 import cv2
 from urllib.parse import unquote_to_bytes
 import re
-from qreader import QReader
 
 
-def read(image) -> str | None:
-    qreader = QReader()
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    decoded_text = qreader.detect_and_decode(image=image)
-    if (decoded_text is None) or (len(decoded_text) == 0) or (decoded_text[0] is None):
+def read(image) -> tuple[str, Any] | None:
+    detector = cv2.QRCodeDetector()
+    try:
+        ret_qr, decoded_info, points, _ = detector.detectAndDecodeMulti(image)
+        if not ret_qr or len(decoded_info[0]) == 0:
+            return None
+        return (decoded_info[0], points)
+    except:
         return None
-    return decoded_text[0]
 
 
-def read_signed_message(image) -> tuple[str, bytes] | None:
-    data = read(image)
-    if (data is None):
-        return None
+def decode_message(data: str) -> tuple[str, bytes]:
     matcher = re.compile(r"^(.*)__(.*)$")
     matches = re.match(matcher, data).groups()
     message = matches[0]
@@ -26,8 +24,18 @@ def read_signed_message(image) -> tuple[str, bytes] | None:
     return (message, base64.b64decode(signature))
 
 
+def process_frame(frame, callback: Callable[[str, bytes], None]) -> None:
+    data = read(frame)
+    if data is None:
+        cv2.imshow('camera', frame)
+        return
+    frame_with_border = cv2.polylines(frame, [data[1].astype(int)], True, (0, 255, 0), 8)
+    cv2.imshow('camera', frame_with_border)
+    callback(decode_message(data[0]))
+
+
 def start_scanning(callback: Callable[[str, bytes], None]) -> None:
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     # Check if the webcam is opened correctly
     if not cap.isOpened():
@@ -35,12 +43,12 @@ def start_scanning(callback: Callable[[str, bytes], None]) -> None:
 
     while True:
         ret, frame = cap.read()
-        cv2.imshow('Input', frame)
 
         c = cv2.waitKey(1)
         if c == 27:
             break
-        callback(read_signed_message(frame))
+        if ret is True:
+            process_frame(frame, callback)
 
     cap.release()
     cv2.destroyAllWindows()

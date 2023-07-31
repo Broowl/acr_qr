@@ -2,20 +2,23 @@ import crypto
 import qr
 import argparse
 import os
+from Crypto.PublicKey.RSA import RsaKey
+import cv2
+
+
+def print_verification(arg: tuple[str, bytes] | None, key: RsaKey) -> None:
+    if arg is None:
+        return
+    is_verified = crypto.verify_message(arg[0], arg[1], key)
+    if is_verified:
+        print("Access granted")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("in_dir")
     parser.add_argument("public_key")
     parsed_args = parser.parse_args()
-    in_dir = parsed_args.in_dir
     public_key_file = parsed_args.public_key
 
     key = crypto.read_key(public_key_file)
-    for file_name in os.listdir(in_dir):
-        read_message, read_signature = qr.read_signed_message(os.path.join(in_dir, file_name))
-        is_verified = crypto.verify_message(read_message, read_signature, key)
-        if is_verified:
-            print("Access granted")
-        else:
-            print("Access denied")
+    qr.start_scanning(lambda arg: print_verification(arg, key))

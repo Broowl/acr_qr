@@ -18,7 +18,7 @@
             "type": "python",
             "request": "launch",
             "program": "scanner/main.py",
-            "args": ["data/codes/Architects", "data/public.pem"],
+            "args": ["data/public.pem"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

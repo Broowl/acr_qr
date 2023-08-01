@@ -17,14 +17,15 @@ def read(image) -> tuple[str, Any] | None:
 
 
 def decode_message(data: str) -> tuple[str, bytes]|None:
-    matcher = re.compile(r"^(.*)__(.*)$")
+    matcher = re.compile(r"^(.*)_(\d+)__(.*)$")
     matches = re.match(matcher, data)
     if matches is None:
         return None
     groups = matches.groups()
     message = groups[0]
-    signature = unquote_to_bytes(groups[1])
-    return (message, base64.b64decode(signature))
+    id = int(groups[1])
+    signature = unquote_to_bytes(groups[2])
+    return (message, id, base64.b64decode(signature))
 
 def start_scanning(callback: Callable[[Any], None]) -> None:
     cap = cv2.VideoCapture(1)

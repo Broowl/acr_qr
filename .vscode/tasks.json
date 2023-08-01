@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "delete_id_list",
+            "command": "if (Test-Path data/id_lists/ids.txt) { Remove-Item data/id_lists/ids.txt -Force }",
+            "type": "shell",
+            "args": []
+        }
+    ]
+}

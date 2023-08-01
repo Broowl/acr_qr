@@ -3,30 +3,39 @@ import crypto
 import qr
 import argparse
 from Crypto.PublicKey.RSA import RsaKey
+import idStorage as ids
 
 
-def process_frame(frame, key: RsaKey, trigger: du.Trigger) -> None:
-    data = qr.read(frame)
-    if data is None:
-        trigger.show_frame(frame)
+def process_frame(frame, key: RsaKey, trigger: du.Trigger, storage: ids.IdStorage) -> None:
+    readResult = qr.read(frame)
+    if readResult is None:
+        trigger.show_frame_stored(frame)
         return
-    decoded = qr.decode_message(data[0])
-    if decoded is None:
-        trigger.show_frame(frame)
+    payload, frame_points = readResult
+    decodeResult = qr.decode_message(payload)
+    if decodeResult is None:
+        trigger.show_frame_denied(frame, ("Wrong format", frame_points))
         return
-    is_verified = crypto.verify_message(decoded[0], decoded[1], key)
+    message, id, signature = decodeResult
+    is_verified = crypto.verify_message(f"{message}_{id}", signature, key)
     if not is_verified:
-        trigger.show_frame(frame)
+        trigger.show_frame_denied(frame, ("Invalid signature", frame_points))
         return
-    trigger.show_frame(frame, (decoded[0], data[1]))
+    if not storage.try_add_id(id):
+        trigger.show_frame_denied(frame, ("Duplicate ID", frame_points))
+        return
+    trigger.show_frame_verified(frame, (message, id, frame_points))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("public_key")
+    parser.add_argument("id_storage_path")
     parsed_args = parser.parse_args()
     public_key_file = parsed_args.public_key
+    id_storage_path = parsed_args.id_storage_path
 
     key = crypto.read_key(public_key_file)
     trigger = du.Trigger(3)
-    qr.start_scanning(lambda arg: process_frame(arg, key, trigger))
+    with ids.IdStorage(id_storage_path, 5) as idStorage:
+        qr.start_scanning(lambda arg: process_frame(arg, key, trigger, idStorage))

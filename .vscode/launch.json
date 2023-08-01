@@ -18,9 +18,10 @@
             "type": "python",
             "request": "launch",
             "program": "scanner/main.py",
-            "args": ["data/public.pem"],
+            "args": ["data/public.pem", "data/id_lists/ids.txt"],
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "preLaunchTask": "delete_id_list"
         }
     ]
 }

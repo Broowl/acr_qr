@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "generator/main.py",
-            "args": ["Architects", "data/codes", "10", "--public_key", "data/public.pem", "--private_key", "data/private.pem"],
+            "args": ["ACR Konzert", "data/codes", "10", "--public_key", "data/keys_short/public.pem", "--private_key", "data/keys_short/private.pem"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -18,7 +18,7 @@
             "type": "python",
             "request": "launch",
             "program": "scanner/main.py",
-            "args": ["data/public.pem", "data/id_lists/ids.txt"],
+            "args": ["data/keys_short/public.pem", "data/id_lists/ids.txt"],
             "console": "integratedTerminal",
             "justMyCode": true,
             "preLaunchTask": "delete_id_list"

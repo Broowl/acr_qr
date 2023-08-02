@@ -6,6 +6,9 @@ import os
 
 
 def save_key(key: RSA.RsaKey, file_name: str) -> None:
+    dir = os.path.dirname(file_name)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     file_out = open(file_name, "wb")
     file_out.write(key.export_key())
     file_out.close()
@@ -13,7 +16,7 @@ def save_key(key: RSA.RsaKey, file_name: str) -> None:
 
 def generate_or_get_keys(file_name_private: str, file_name_public: str) -> RSA.RsaKey:
     if not os.path.exists(file_name_private):
-        key = RSA.generate(2048)
+        key = RSA.generate(1024)
         save_key(key, file_name_private)
         save_key(key.public_key(), file_name_public)
         return key

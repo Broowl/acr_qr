@@ -28,7 +28,7 @@ def decode_message(data: str) -> tuple[str, bytes]|None:
     return (message, id, base64.b64decode(signature))
 
 def start_scanning(callback: Callable[[Any], None]) -> None:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     # Check if the webcam is opened correctly
     if not cap.isOpened():

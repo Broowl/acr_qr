@@ -48,7 +48,7 @@ def show_frame(frame) -> None:
 
 def decorate_frame_green(frame, event: str, id: int, points):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
+    font_scale = 0.5
     int_points = [points.astype(int)]
     color = (20, 220, 15)
     thickness = 2
@@ -76,7 +76,7 @@ def decorate_frame_green(frame, event: str, id: int, points):
 
 def decorate_frame_red(frame, reason: str, points):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
+    font_scale = 0.5
     int_points = [points.astype(int)]
     color = (10, 10, 230)
     thickness = 2

@@ -10,6 +10,7 @@ import qr
 
 def generate(gen_config: config.Config, progress_indicator: gui.ProgressIndicator):
     key = crypto.generate_or_get_keys(gen_config.key_dir)
+    progress_indicator.set_maximum(gen_config.num_qr_codes)
     for i_code in range(gen_config.num_qr_codes):
         data = f"{gen_config.event_name}_{i_code}"
         signature = crypto.sign_message(data, key)

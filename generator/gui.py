@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 
 import PyQt5.QtWidgets as Qt
-# pylint: disable=no-name-in-module
 from PyQt5.QtCore import QSize, QUrl
 from PyQt5.QtGui import QDesktopServices
 
@@ -32,9 +31,12 @@ class ProgressIndicator:
         self.box.addButton(Qt.QMessageBox.StandardButton.Ok)
         self.box.addButton(button, Qt.QMessageBox.ButtonRole.ActionRole)
 
+    def set_maximum(self, progress_max: int):
+        self.progress_bar.setMaximum(progress_max)
+
     def set_progress(self, progress: int):
         self.progress_bar.setValue(progress + 1)
-        if (self.progress_bar.value() == self.progress_bar.maximum()):
+        if self.progress_bar.value() == self.progress_bar.maximum():
             self.box.show()
             self.start_button.setEnabled(True)
 
@@ -59,7 +61,6 @@ class MainWindow(Qt.QMainWindow):
 
     def _on_start_button_pressed(self):
         self.start_button.setEnabled(False)
-        self.progress_bar.setMaximum(self.config.num_qr_codes)
         self.callback(self.config, ProgressIndicator(
             self.progress_bar, self.start_button, self.config.out_dir))
 

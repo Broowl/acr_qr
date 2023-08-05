@@ -19,7 +19,7 @@ def generate(gen_config: config.Config, progress_indicator: gui.ProgressIndicato
         progress_indicator.set_progress(i_code)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--out_dir")
     parser.add_argument("-k", "--key_dir")
@@ -44,3 +44,7 @@ if __name__ == "__main__":
     initial_config = config.Config(event_name, num_codes, out_dir, key_dir)
 
     gui.create(generate, initial_config)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,31 +1,29 @@
 import base64
+import re
+from urllib.parse import unquote_to_bytes
 from typing import Any, Callable
 import cv2
-from urllib.parse import unquote_to_bytes
-import re
 
 
 def read(image) -> tuple[str, Any] | None:
     detector = cv2.QRCodeDetector()
-    try:
-        ret_qr, decoded_info, points, _ = detector.detectAndDecodeMulti(image)
-        if not ret_qr or len(decoded_info[0]) == 0:
-            return None
-        return (decoded_info[0], points)
-    except:
+    ret_qr, decoded_info, points, _ = detector.detectAndDecodeMulti(image)
+    if not ret_qr or len(decoded_info[0]) == 0:
         return None
+    return (decoded_info[0], points)
 
 
-def decode_message(data: str) -> tuple[str, bytes]|None:
+def decode_message(data: str) -> tuple[str, bytes] | None:
     matcher = re.compile(r"^(.*)_(\d+)__(.*)$")
     matches = re.match(matcher, data)
     if matches is None:
         return None
     groups = matches.groups()
     message = groups[0]
-    id = int(groups[1])
+    ticket_id = int(groups[1])
     signature = unquote_to_bytes(groups[2])
-    return (message, id, base64.b64decode(signature))
+    return (message, ticket_id, base64.b64decode(signature))
+
 
 def start_scanning(callback: Callable[[Any], None]) -> None:
     cap = cv2.VideoCapture(0)

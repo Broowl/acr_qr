@@ -5,9 +5,11 @@ import numpy as np
 
 
 class Trigger:
+    """Class for displaying smooth frames around detected QR-codes"""
     def __init__(self, trigger_length: float) -> None:
         self.timer = None
         self.trigger_length = trigger_length
+        self.args = None
 
     def show_frame_verified(self, frame: Any, args: tuple[str, int, Any]) -> None:
         self._trigger()
@@ -46,7 +48,7 @@ def show_frame(frame) -> None:
     cv2.imshow('camera', frame)
 
 
-def decorate_frame_green(frame, event: str, id: int, points):
+def decorate_frame_green(frame, event: str, ticket_id: int, points):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     int_points = [points.astype(int)]
@@ -62,7 +64,7 @@ def decorate_frame_green(frame, event: str, id: int, points):
                             font_scale, (255, 255, 255), thickness * 4, cv2.LINE_AA)
     decorated = cv2.putText(decorated, first_line, first_line_origin, font,
                             font_scale, color, thickness, cv2.LINE_AA)
-    second_line = f"ID: {id}"
+    second_line = f"ID: {ticket_id}"
     second_line_origin = np.copy(int_points[0][0][0])
     second_line_origin[0] += 10  # horizontal offset
     second_line_origin[1] += 100  # vertical offset

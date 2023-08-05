@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Callable
 
 import PyQt5.QtWidgets as Qt
 from PyQt5.QtCore import QSize, QUrl
@@ -15,6 +16,7 @@ def open_folder(folder: Path):
 
 class ProgressIndicator:
     """Class which can be used to indicate progress"""
+
     def __init__(self, progress_bar: Qt.QProgressBar, start_button: Qt.QPushButton, out_dir: Path):
         self.progress_bar = progress_bar
         self.start_button = start_button
@@ -105,7 +107,7 @@ class MainWindow(Qt.QMainWindow):
             directory=str(self.config.out_dir))
         self.output_folder_menu.fileSelected.connect(self._set_out_dir)
 
-    def __init__(self, callback, default_config: Config):
+    def __init__(self, callback: Callable[[Config, ProgressIndicator], None], default_config: Config):
         super().__init__()
 
         self.callback = callback
@@ -129,7 +131,7 @@ class MainWindow(Qt.QMainWindow):
         self.setFixedSize(QSize(600, 300))
 
 
-def create(callback, default_config: Config):
+def create(callback: Callable[[Config, ProgressIndicator], None], default_config: Config):
     app = Qt.QApplication(sys.argv)
     window = MainWindow(callback, default_config)
     window.show()

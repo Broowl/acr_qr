@@ -1,4 +1,6 @@
 import time
+from types import TracebackType
+from typing import Dict
 
 
 class IdStorage:
@@ -7,14 +9,17 @@ class IdStorage:
     def __init__(self, file_name: str, grace_period_s: int) -> None:
         self.file_name = file_name
         self.grace_period_s = grace_period_s
-        self.storage = {}
+        self.storage: Dict[int, float] = {}
         self.file = None
 
     def __enter__(self):
         self.file = open(self.file_name, "w", encoding="utf-8")
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self,
+                 exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None):
         if self.file is not None:
             self.file.close()
 

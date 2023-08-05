@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "generator/main.py",
-            "args": ["data/codes", "--public_key", "data/keys_short/public.pem", "--private_key", "data/keys_short/private.pem"],
+            "args": ["-o", "data/codes", "-k", "data/keys_short"],
             "console": "integratedTerminal",
             "justMyCode": true
         },

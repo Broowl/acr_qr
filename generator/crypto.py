@@ -1,3 +1,4 @@
+from pathlib import Path
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 from Crypto.Hash import SHA256
@@ -14,10 +15,12 @@ def save_key(key: RSA.RsaKey, file_name: str) -> None:
     file_out.close()
 
 
-def generate_or_get_keys(file_name_private: str, file_name_public: str) -> RSA.RsaKey:
+def generate_or_get_keys(key_dir:Path) -> RSA.RsaKey:
+    file_name_private = str(key_dir / "private.pem")
     if not os.path.exists(file_name_private):
         key = RSA.generate(1024)
         save_key(key, file_name_private)
+        file_name_public = str(key_dir / "public.pem")
         save_key(key.public_key(), file_name_public)
         return key
     return RSA.import_key(open(file_name_private).read())

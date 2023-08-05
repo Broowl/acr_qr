@@ -1,16 +1,16 @@
 import base64
-import qrcode
 import os
 from urllib.parse import quote
+import qrcode
 
 
 def save(data: str, file_name: str) -> None:
     img = qrcode.make(data)
     if os.path.exists(file_name):
         os.remove(file_name)
-    dir = os.path.dirname(file_name)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+    dir_name = os.path.dirname(file_name)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     img.save(file_name)
 
 

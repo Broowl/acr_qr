@@ -10,7 +10,7 @@ def verify_message(message:str, signature: bytes, public_key: RSA.RsaKey) -> boo
     hashed = SHA256.new(message.encode())
     verifier = pss.new(public_key)
     try:
-        verifier.verify(hashed, signature)
+        verifier.verify(hashed, signature) # type: ignore
         return True
     except (ValueError, TypeError):
         return False

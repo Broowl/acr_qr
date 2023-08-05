@@ -36,6 +36,8 @@ class Trigger:
         return time.time() - self.timer < self.trigger_length
 
     def _show_frame_stored(self, frame):
+        if self.args is None:
+            return
         if len(self.args) == 3:
             show_frame(decorate_frame_green(
                 frame, self.args[0], self.args[1], self.args[2]))

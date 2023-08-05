@@ -13,7 +13,7 @@ def read(image) -> tuple[str, Any] | None:
     return (decoded_info[0], points)
 
 
-def decode_message(data: str) -> tuple[str, bytes] | None:
+def decode_message(data: str) -> tuple[str, int, bytes] | None:
     matcher = re.compile(r"^(.*)_(\d+)__(.*)$")
     matches = re.match(matcher, data)
     if matches is None:

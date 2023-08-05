@@ -15,7 +15,8 @@ class IdStorage:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.file.close()
+        if self.file is not None:
+            self.file.close()
 
     def try_add_id(self, ticket_id: int) -> bool:
         stored_time = self.storage.get(ticket_id)
@@ -25,6 +26,8 @@ class IdStorage:
         return time.time() - stored_time < self.grace_period_s
 
     def _add(self, ticket_id: int) -> None:
+        if self.file is None:
+            return
         now = time.time()
         self.storage[ticket_id] = now
         local_time = time.localtime(now)

@@ -4,6 +4,8 @@ from typing import Any, Optional
 import cv2
 import numpy as np
 
+from .gui import FramePainter
+
 
 @dataclass
 class SuccessArgs:
@@ -26,21 +28,21 @@ class Trigger:
         self.trigger_length = trigger_length
         self.args: Optional[SuccessArgs | ErrorArgs] = None
 
-    def show_frame_verified(self, frame: Any, args: tuple[str, int, Any]) -> None:
+    def show_frame_verified(self, frame: Any, args: tuple[str, int, Any], painter: FramePainter) -> None:
         self._trigger()
         self.args = SuccessArgs(args[0], args[1], args[2])
-        show_frame(decorate_frame_green(frame, args[0], args[1], args[2]))
+        painter.paint(decorate_frame_green(frame, args[0], args[1], args[2]))
 
-    def show_frame_denied(self, frame: Any, args: tuple[str, Any]) -> None:
+    def show_frame_denied(self, frame: Any, args: tuple[str, Any], painter: FramePainter) -> None:
         self._trigger()
         self.args = ErrorArgs(args[0], args[1])
-        show_frame(decorate_frame_red(frame, args[0], args[1]))
+        painter.paint(decorate_frame_red(frame, args[0], args[1]))
 
-    def show_frame_stored(self, frame: Any) -> None:
+    def show_frame_stored(self, frame: Any, painter: FramePainter) -> None:
         if self._get_is_triggered():
-            self._show_frame_stored(frame)
+            self._show_frame_stored(frame, painter)
             return
-        show_frame(frame)
+        painter.paint(frame)
 
     def _trigger(self) -> None:
         self.timer = time.time()
@@ -50,18 +52,14 @@ class Trigger:
             return False
         return time.time() - self.timer < self.trigger_length
 
-    def _show_frame_stored(self, frame: Any) -> None:
+    def _show_frame_stored(self, frame: Any, painter: FramePainter) -> None:
         if type(self.args) is SuccessArgs:
-            show_frame(decorate_frame_green(
+            painter.paint(decorate_frame_green(
                 frame, self.args.event, self.args.ticket_id, self.args.points))
             return
         if type(self.args) is ErrorArgs:
-            show_frame(decorate_frame_red(
+            painter.paint(decorate_frame_red(
                 frame, self.args.reason, self.args.points))
-
-
-def show_frame(frame: Any) -> None:
-    cv2.imshow('camera', frame)
 
 
 def decorate_frame_green(frame: Any, event: str, ticket_id: int, points: Any) -> Any:

@@ -1,16 +1,29 @@
 import os
 import sys
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, List
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
+import numpy as np
+import numpy.typing as npt
 from .config import Config
+
+
+class FramePainter:
+    def __init__(self, label: QtWidget.QLabel) -> None:
+        self.label = label
+
+    def paint(self, frame: Any) -> None:
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        qImg = QtGui.QImage(frame.data, width, height, bytes_per_line, QtGui.QImage.Format_BGR888)
+        self.label.setPixmap(QtGui.QPixmap(qImg))
+
 
 class MainWindow(QtWidget.QMainWindow):
     """Class representing the GUI window"""
-
 
     def _set_log_dir(self, file: str) -> None:
         self.config.log_dir = Path(file)
@@ -41,7 +54,7 @@ class MainWindow(QtWidget.QMainWindow):
             directory=str(os.path.dirname(self.config.key_path)))
         self.key_path_menu.fileSelected.connect(self._set_key_path)
 
-    def __init__(self, callback: Callable[[], None], default_config: Config):
+    def __init__(self, callback: Callable[[FramePainter], None], default_config: Config):
         super().__init__()
 
         self.callback = callback
@@ -52,19 +65,22 @@ class MainWindow(QtWidget.QMainWindow):
         self._init_file_menu()
         self._init_log_folder_menu()
         self._init_key_path_menu()
+        image_label = QtWidget.QLabel()
+        self.frame_painter = FramePainter(image_label)
+        self.widget_layout.addWidget(image_label)
 
         widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)
-        
+
         self.setCentralWidget(widget)
-        self.setFixedSize(QtCore.QSize(600, 300))
+        self.setFixedSize(QtCore.QSize(650, 550))
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)
-        self.timer.timeout.connect(self.callback)
+        self.timer.timeout.connect(lambda: self.callback(self.frame_painter))
         self.timer.start()
 
 
-def create(callback: Callable[[], None], default_config: Config) -> None:
+def create(callback: Callable[[FramePainter], None], default_config: Config) -> None:
     app = QtWidget.QApplication(sys.argv)
     window = MainWindow(callback, default_config)
     window.show()

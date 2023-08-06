@@ -8,7 +8,6 @@ from . import qr
 
 
 def process_frame(frame: Any, key: RsaKey, trigger: du.Trigger, storage: ids.IdStorage) -> None:
-    # pylint: disable=maybe-no-member
     read_result = qr.read(frame)
     if read_result is None:
         trigger.show_frame_stored(frame)
@@ -41,7 +40,6 @@ def main() -> None:
     key = signing.read_key(public_key_file)
     trigger = du.Trigger(3)
     with ids.IdStorage(id_storage_path, 5) as id_storage:
-        # pylint: disable=maybe-no-member
         qr.start_scanning(lambda arg: process_frame(
             arg, key, trigger, id_storage))
 

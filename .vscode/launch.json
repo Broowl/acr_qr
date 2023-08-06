@@ -9,7 +9,12 @@
             "type": "python",
             "request": "launch",
             "program": "src/generator/generator.py",
-            "args": ["-o", "data/codes", "-k", "data/keys_short"],
+            "args": [
+                "-o",
+                "data/codes",
+                "-k",
+                "data/keys_short"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -18,7 +23,12 @@
             "type": "python",
             "request": "launch",
             "program": "src/scanner/scanner.py",
-            "args": ["data/keys_short/public.pem", "data/id_lists/ids.txt"],
+            "args": [
+                "-k",
+                "data/keys_short/public.pem",
+                "-l",
+                "data/id_lists"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true,
             "preLaunchTask": "delete_id_list"

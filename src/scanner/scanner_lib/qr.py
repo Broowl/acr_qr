@@ -1,7 +1,8 @@
 import base64
 import re
+from types import TracebackType
 from urllib.parse import unquote_to_bytes
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 import cv2
 
 
@@ -25,21 +26,28 @@ def decode_message(data: str) -> tuple[str, int, bytes] | None:
     return (message, ticket_id, base64.b64decode(signature))
 
 
-def start_scanning(callback: Callable[[Any], None]) -> None:
-    cap = cv2.VideoCapture(0)
+class CameraCapture:
+    def __init__(self) -> None:
+        self.capture: Optional[cv2.VideoCapture] = None
+        
+    def __enter__(self) -> Any:
+        self.capture = cv2.VideoCapture(0)
+        if not self.capture.isOpened():
+            raise IOError("Cannot open webcam")
+        return self
 
-    # Check if the webcam is opened correctly
-    if not cap.isOpened():
-        raise IOError("Cannot open webcam")
+    def __exit__(self,
+                 exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> None:
+        if self.capture is not None:
+             self.capture.release()
+             cv2.destroyAllWindows()
+        
+    def get_frame(self) -> Any:
+        if self.capture is None:
+            raise RuntimeError("VideoCapture not initialized")
+        ret, frame = self.capture.read()
+        return frame
 
-    while True:
-        ret, frame = cap.read()
-
-        c = cv2.waitKey(1)
-        if c == 27:
-            break
-        if ret is True:
-            callback(frame)
-
-    cap.release()
-    cv2.destroyAllWindows()
+   

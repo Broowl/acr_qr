@@ -1,22 +1,22 @@
+from pathlib import Path
 import time
 from io import TextIOWrapper
 from types import TracebackType
 from typing import Dict, Optional, Any
 
-# pyright: reportUndefinedVariable=false
-
 
 class IdStorage:
     """Class for storing scanned ticket IDs"""
 
-    def __init__(self, file_name: str, grace_period_s: int) -> None:
-        self.file_name = file_name
+    def __init__(self, log_path: Path, grace_period_s: int) -> None:
+        self.log_path = log_path
         self.grace_period_s = grace_period_s
         self.storage: Dict[int, float] = {}
         self.file: Optional[TextIOWrapper] = None
 
     def __enter__(self) -> Any:
-        self.file = open(self.file_name, "w", encoding="utf-8")
+        # todo: add more log files
+        self.file = open(self.log_path / "ids.txt", "w", encoding="utf-8")
         return self
 
     def __exit__(self,

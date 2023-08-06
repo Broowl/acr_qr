@@ -2,36 +2,36 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-import PyQt5.QtWidgets as Qt
-from PyQt5.QtCore import QSize, QUrl
-from PyQt5.QtGui import QDesktopServices
+import PyQt5.QtWidgets as QtWidget
+import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
 
 from .config import Config
 
 
 def open_folder(folder: Path) -> None:
     url = str(folder.absolute())
-    QDesktopServices.openUrl(QUrl.fromLocalFile(url))
+    QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(url))
 
 
 class ProgressIndicator:
     """Class which can be used to indicate progress"""
 
-    def __init__(self, progress_bar: Qt.QProgressBar, start_button: Qt.QPushButton, out_dir: Path):
+    def __init__(self, progress_bar: QtWidget.QProgressBar, start_button: QtWidget.QPushButton, out_dir: Path):
         self.progress_bar = progress_bar
         self.start_button = start_button
         self.out_dir = out_dir
         self._init_message_box()
 
     def _init_message_box(self) -> None:
-        self.box = Qt.QMessageBox()
+        self.box = QtWidget.QMessageBox()
         self.box.setText("Ich habe fertig")
-        button = Qt.QPushButton()
+        button = QtWidget.QPushButton()
         button.clicked.connect(lambda: open_folder(self.out_dir))
         button.setText("Ordner öffnen")
         self.box.setWindowTitle("Info")
-        self.box.addButton(Qt.QMessageBox.StandardButton.Ok)
-        self.box.addButton(button, Qt.QMessageBox.ButtonRole.ActionRole)
+        self.box.addButton(QtWidget.QMessageBox.StandardButton.Ok)
+        self.box.addButton(button, QtWidget.QMessageBox.ButtonRole.ActionRole)
 
     def set_maximum(self, progress_max: int) -> None:
         self.progress_bar.setMaximum(progress_max)
@@ -43,7 +43,7 @@ class ProgressIndicator:
             self.start_button.setEnabled(True)
 
 
-class MainWindow(Qt.QMainWindow):
+class MainWindow(QtWidget.QMainWindow):
     """Class representing the GUI window"""
 
     def _enable_button(self) -> None:
@@ -80,30 +80,30 @@ class MainWindow(Qt.QMainWindow):
             self._on_select_output_folder_menu_triggered)
 
     def _init_event_name_edit(self) -> None:
-        self.event_name_edit = Qt.QLineEdit('')
+        self.event_name_edit = QtWidget.QLineEdit('')
         self.event_name_edit.setText(self.config.event_name)
         self.event_name_edit.editingFinished.connect(self._on_event_name_set)
         self.widget_layout.addWidget(self.event_name_edit)
 
     def _init_num_qr_codes_edit(self) -> None:
-        self.num_qr_codes_edit = Qt.QLineEdit('')
+        self.num_qr_codes_edit = QtWidget.QLineEdit('')
         self.num_qr_codes_edit.setText(str(self.config.num_qr_codes))
         self.num_qr_codes_edit.editingFinished.connect(
             self._on_num_qr_codes_set)
         self.widget_layout.addWidget(self.num_qr_codes_edit)
 
     def _init_start_button(self) -> None:
-        self.start_button = Qt.QPushButton('Start')
+        self.start_button = QtWidget.QPushButton('Start')
         self.start_button.setEnabled(False)
         self.start_button.clicked.connect(self._on_start_button_pressed)
         self.widget_layout.addWidget(self.start_button)
 
     def _init_progress_bar(self) -> None:
-        self.progress_bar = Qt.QProgressBar()
+        self.progress_bar = QtWidget.QProgressBar()
         self.widget_layout.addWidget(self.progress_bar)
 
     def _init_output_folder_menu(self) -> None:
-        self.output_folder_menu = Qt.QFileDialog(
+        self.output_folder_menu = QtWidget.QFileDialog(
             directory=str(self.config.out_dir))
         self.output_folder_menu.fileSelected.connect(self._set_out_dir)
 
@@ -114,25 +114,25 @@ class MainWindow(Qt.QMainWindow):
         self.config: Config = default_config
 
         self.setWindowTitle("ACR QR-Code Generator")
-        self.widget_layout = Qt.QVBoxLayout()
+        self.widget_layout = QtWidget.QVBoxLayout()
         self._init_file_menu()
-        self.widget_layout.addWidget(Qt.QLabel('Veranstaltungsname'))
+        self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsname'))
         self._init_event_name_edit()
-        self.widget_layout.addWidget(Qt.QLabel('Anzahl QR-Codes'))
+        self.widget_layout.addWidget(QtWidget.QLabel('Anzahl QR-Codes'))
         self._init_num_qr_codes_edit()
         self._init_start_button()
         self._init_progress_bar()
         self._init_output_folder_menu()
 
-        widget = Qt.QWidget()
+        widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)
 
         self.setCentralWidget(widget)
-        self.setFixedSize(QSize(600, 300))
+        self.setFixedSize(QtCore.QSize(600, 300))
 
 
 def create(callback: Callable[[Config, ProgressIndicator], None], default_config: Config) -> None:
-    app = Qt.QApplication(sys.argv)
+    app = QtWidget.QApplication(sys.argv)
     window = MainWindow(callback, default_config)
     window.show()
     app.exec()

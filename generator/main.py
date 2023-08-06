@@ -2,24 +2,24 @@ from pathlib import Path
 import argparse
 import os
 
-import crypto
-import config
-import gui
-import qr
+from . import signing
+from . import config
+from . import gui
+from . import qr
 
 
-def generate(gen_config: config.Config, progress_indicator: gui.ProgressIndicator):
-    key = crypto.generate_or_get_keys(gen_config.key_dir)
+def generate(gen_config: config.Config, progress_indicator: gui.ProgressIndicator) -> None:
+    key = signing.generate_or_get_keys(gen_config.key_dir)
     progress_indicator.set_maximum(gen_config.num_qr_codes)
     for i_code in range(gen_config.num_qr_codes):
         data = f"{gen_config.event_name}_{i_code}"
-        signature = crypto.sign_message(data, key)
+        signature = signing.sign_message(data, key)
         qr.save_signed_message(data, signature, os.path.join(
             gen_config.out_dir, gen_config.event_name, f"{i_code}.png"))
         progress_indicator.set_progress(i_code)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--out_dir")
     parser.add_argument("-k", "--key_dir")

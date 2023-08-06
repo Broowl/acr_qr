@@ -1,7 +1,9 @@
 import time
+from io import TextIOWrapper
 from types import TracebackType
-from typing import Dict
+from typing import Dict, Optional
 
+# pyright: reportUndefinedVariable=false
 
 class IdStorage:
     """Class for storing scanned ticket IDs"""
@@ -10,16 +12,16 @@ class IdStorage:
         self.file_name = file_name
         self.grace_period_s = grace_period_s
         self.storage: Dict[int, float] = {}
-        self.file = None
+        self.file:Optional[TextIOWrapper] =  None
 
-    def __enter__(self):
+    def __enter__(self) -> IdStorage:
         self.file = open(self.file_name, "w", encoding="utf-8")
         return self
 
     def __exit__(self,
                  exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
-                 exc_tb: TracebackType | None):
+                 exc_tb: TracebackType | None) -> None:
         if self.file is not None:
             self.file.close()
 

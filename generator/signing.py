@@ -27,4 +27,4 @@ def generate_or_get_keys(key_dir: Path) -> RSA.RsaKey:
 
 def sign_message(message: str, private_key: RSA.RsaKey) -> bytes:
     hashed = SHA256.new(message.encode())
-    return pss.new(private_key).sign(hashed) # type: ignore
+    return pss.new(private_key).sign(hashed)

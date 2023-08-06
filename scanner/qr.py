@@ -5,7 +5,7 @@ from typing import Any, Callable
 import cv2
 
 
-def read(image) -> tuple[str, Any] | None:
+def read(image: Any) -> tuple[str, Any] | None:
     detector = cv2.QRCodeDetector()
     ret_qr, decoded_info, points, _ = detector.detectAndDecodeMulti(image)
     if not ret_qr or len(decoded_info[0]) == 0:

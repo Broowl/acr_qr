@@ -1,24 +1,39 @@
+from dataclasses import dataclass
 import time
-from typing import Any
+from typing import Any, Optional
 import cv2
 import numpy as np
 
 
+@dataclass
+class SuccessArgs:
+    event: str
+    ticket_id: int
+    points: Any
+
+
+@dataclass
+class ErrorArgs:
+    reason: str
+    points: Any
+
+
 class Trigger:
     """Class for displaying smooth frames around detected QR-codes"""
+
     def __init__(self, trigger_length: float) -> None:
-        self.timer = None
+        self.timer: Optional[float] = None
         self.trigger_length = trigger_length
-        self.args = None
+        self.args: Optional[SuccessArgs | ErrorArgs] = None
 
     def show_frame_verified(self, frame: Any, args: tuple[str, int, Any]) -> None:
         self._trigger()
-        self.args = args
+        self.args = SuccessArgs(args[0], args[1], args[2])
         show_frame(decorate_frame_green(frame, args[0], args[1], args[2]))
 
     def show_frame_denied(self, frame: Any, args: tuple[str, Any]) -> None:
         self._trigger()
-        self.args = args
+        self.args = ErrorArgs(args[0], args[1])
         show_frame(decorate_frame_red(frame, args[0], args[1]))
 
     def show_frame_stored(self, frame: Any) -> None:
@@ -35,22 +50,21 @@ class Trigger:
             return False
         return time.time() - self.timer < self.trigger_length
 
-    def _show_frame_stored(self, frame):
-        if self.args is None:
-            return
-        if len(self.args) == 3:
+    def _show_frame_stored(self, frame: Any) -> None:
+        if type(self.args) is SuccessArgs:
             show_frame(decorate_frame_green(
-                frame, self.args[0], self.args[1], self.args[2]))
-        else:
+                frame, self.args.event, self.args.ticket_id, self.args.points))
+            return
+        if type(self.args) is ErrorArgs:
             show_frame(decorate_frame_red(
-                frame, self.args[0], self.args[1]))
+                frame, self.args.reason, self.args.points))
 
 
-def show_frame(frame) -> None:
+def show_frame(frame: Any) -> None:
     cv2.imshow('camera', frame)
 
 
-def decorate_frame_green(frame, event: str, ticket_id: int, points):
+def decorate_frame_green(frame: Any, event: str, ticket_id: int, points: Any) -> Any:
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     int_points = [points.astype(int)]
@@ -78,7 +92,7 @@ def decorate_frame_green(frame, event: str, ticket_id: int, points):
     return decorated
 
 
-def decorate_frame_red(frame, reason: str, points):
+def decorate_frame_red(frame: Any, reason: str, points: Any) -> Any:
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     int_points = [points.astype(int)]

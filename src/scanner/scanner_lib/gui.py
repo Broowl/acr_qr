@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
@@ -25,17 +25,23 @@ class FramePainter:
         self.label.setPixmap(QtGui.QPixmap(scaled_image))
 
 
-class MainWindow(QtWidget.QMainWindow):
-    """Class representing the GUI window"""
+class ScannerQtMainWindow(QtWidget.QMainWindow):
+    """Class representing the QT GUI window"""
 
     def _set_log_dir(self, file: str) -> None:
-        self.config.log_dir = Path(file)
+        file_path = Path(file)
+        self.config.log_dir = file_path
+        if self.log_dir_changed_listener is not None:
+            self.log_dir_changed_listener(file_path)
 
     def _set_key_path(self, file: str) -> None:
-        self.config.key_path = Path(file)
+        file_path = Path(file)
+        self.config.key_path = file_path
+        if self.key_path_changed_listener is not None:
+            self.key_path_changed_listener(file_path)
 
     def _on_select_log_folder_menu_triggered(self) -> None:
-        self.log_folder_menu.getExistingDirectory()
+        self._set_log_dir(self.log_folder_menu.getExistingDirectory())
 
     def _on_select_key_path_menu_triggered(self) -> None:
         self.key_path_menu.show()
@@ -50,17 +56,27 @@ class MainWindow(QtWidget.QMainWindow):
     def _init_log_folder_menu(self) -> None:
         self.log_folder_menu = QtWidget.QFileDialog(
             directory=str(self.config.log_dir.absolute()))
-        self.log_folder_menu.fileSelected.connect(self._set_log_dir)
 
     def _init_key_path_menu(self) -> None:
         self.key_path_menu = QtWidget.QFileDialog(
             directory=str(os.path.dirname(self.config.key_path)))
         self.key_path_menu.fileSelected.connect(self._set_key_path)
 
-    def __init__(self, callback: Callable[[FramePainter], None], default_config: Config):
+    def _init_image_frame(self) -> None:
+        image_label = QtWidget.QLabel()
+        self.frame_painter = FramePainter(image_label)
+        self.widget_layout.addWidget(image_label)
+
+    def _notify_timer_listener(self) -> None:
+        if self.timer_listener is not None:
+            self.timer_listener()
+
+    def __init__(self, default_config: Config):
         super().__init__()
 
-        self.callback = callback
+        self.timer_listener: Optional[Callable[[], None]] = None
+        self.key_path_changed_listener: Optional[Callable[[Path], None]] = None
+        self.log_dir_changed_listener: Optional[Callable[[Path], None]] = None
         self.config: Config = default_config
 
         self.setWindowTitle("ACR QR-Code Scanner")
@@ -68,9 +84,7 @@ class MainWindow(QtWidget.QMainWindow):
         self._init_file_menu()
         self._init_log_folder_menu()
         self._init_key_path_menu()
-        self.image_label = QtWidget.QLabel()
-        self.frame_painter = FramePainter(self.image_label)
-        self.widget_layout.addWidget(self.image_label)
+        self._init_image_frame()
 
         widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)
@@ -79,12 +93,38 @@ class MainWindow(QtWidget.QMainWindow):
         self.setCentralWidget(widget)
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)
-        self.timer.timeout.connect(lambda: self.callback(self.frame_painter))
+        self.timer.timeout.connect(self._notify_timer_listener)
         self.timer.start()
 
+    def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
+        self.timer_listener = timer_listener
 
-def create(callback: Callable[[FramePainter], None], default_config: Config) -> None:
-    app = QtWidget.QApplication(sys.argv)
-    window = MainWindow(callback, default_config)
-    window.show()
-    app.exec()
+    def set_key_path_changed_listener(self, key_path_changed_listener: Callable[[Path], None]) -> None:
+        self.key_path_changed_listener = key_path_changed_listener
+
+    def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
+        self.log_dir_changed_listener = log_dir_changed_listener
+
+
+class ScannerGui:
+    """Class representing the generic interface the GUI must provide"""
+
+    def __init__(self, default_config: Config) -> None:
+        self.app = QtWidget.QApplication(sys.argv)
+        self.window = ScannerQtMainWindow(default_config)
+
+    def get_painter(self) -> FramePainter:
+        return self.window.frame_painter
+
+    def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
+        self.window.set_timer_listener(timer_listener)
+
+    def set_key_path_changed_listener(self, key_path_changed_listener: Callable[[Path], None]) -> None:
+        self.window.set_key_path_changed_listener(key_path_changed_listener)
+
+    def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
+        self.window.set_log_dir_changed_listener(log_dir_changed_listener)
+
+    def run(self) -> None:
+        self.window.show()
+        self.app.exec()

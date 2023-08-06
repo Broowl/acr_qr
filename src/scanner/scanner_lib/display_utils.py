@@ -25,26 +25,27 @@ class ErrorArgs:
 class Trigger:
     """Class for displaying smooth frames around detected QR-codes"""
 
-    def __init__(self, trigger_length: float) -> None:
+    def __init__(self, trigger_length: float, painter: FramePainter) -> None:
         self.timer: Optional[float] = None
         self.trigger_length = trigger_length
         self.args: Optional[SuccessArgs | ErrorArgs] = None
+        self.painter = painter
 
-    def show_frame_verified(self, frame: Any, args: tuple[str, int, Any], painter: FramePainter) -> None:
+    def show_frame_verified(self, frame: Any, args: tuple[str, int, Any]) -> None:
         self._trigger()
         self.args = SuccessArgs(args[0], args[1], args[2])
-        painter.paint(decorate_frame_green(frame, args[0], args[1], args[2]))
+        self.painter.paint(decorate_frame_green(frame, args[0], args[1], args[2]))
 
-    def show_frame_denied(self, frame: Any, args: tuple[str, Any], painter: FramePainter) -> None:
+    def show_frame_denied(self, frame: Any, args: tuple[str, Any]) -> None:
         self._trigger()
         self.args = ErrorArgs(args[0], args[1])
-        painter.paint(decorate_frame_red(frame, args[0], args[1]))
+        self.painter.paint(decorate_frame_red(frame, args[0], args[1]))
 
-    def show_frame_stored(self, frame: Any, painter: FramePainter) -> None:
+    def show_frame_stored(self, frame: Any) -> None:
         if self._get_is_triggered():
-            self._show_frame_stored(frame, painter)
+            self._show_frame_stored(frame)
             return
-        painter.paint(frame)
+        self.painter.paint(frame)
 
     def _trigger(self) -> None:
         self.timer = time.time()
@@ -54,13 +55,13 @@ class Trigger:
             return False
         return time.time() - self.timer < self.trigger_length
 
-    def _show_frame_stored(self, frame: Any, painter: FramePainter) -> None:
+    def _show_frame_stored(self, frame: Any) -> None:
         if isinstance(self.args, SuccessArgs):
-            painter.paint(decorate_frame_green(
+            self.painter.paint(decorate_frame_green(
                 frame, self.args.event, self.args.ticket_id, self.args.points))
             return
         if isinstance(self.args, ErrorArgs):
-            painter.paint(decorate_frame_red(
+            self.painter.paint(decorate_frame_red(
                 frame, self.args.reason, self.args.points))
 
 

@@ -67,7 +67,7 @@ class MainWindow(QtWidget.QMainWindow):
             self.progress_bar, self.start_button, self.config.out_dir))
 
     def _on_select_output_folder_menu_triggered(self) -> None:
-        self.output_folder_menu.getExistingDirectory()
+        self._set_out_dir(self.output_folder_menu.getExistingDirectory())
 
     def _on_open_key_folder_menu_triggered(self) -> None:
         open_folder(self.config.key_dir)
@@ -105,7 +105,6 @@ class MainWindow(QtWidget.QMainWindow):
     def _init_output_folder_menu(self) -> None:
         self.output_folder_menu = QtWidget.QFileDialog(
             directory=str(self.config.out_dir))
-        self.output_folder_menu.fileSelected.connect(self._set_out_dir)
 
     def __init__(self, callback: Callable[[Config, ProgressIndicator], None], default_config: Config):
         super().__init__()

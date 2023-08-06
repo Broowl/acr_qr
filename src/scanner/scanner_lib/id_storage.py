@@ -15,7 +15,6 @@ class IdStorage:
         self.file: Optional[TextIOWrapper] = None
 
     def __enter__(self) -> Any:
-        # todo: add more log files
         self.file = open(self.log_path / "ids.txt", "w", encoding="utf-8")
         return self
 
@@ -32,6 +31,12 @@ class IdStorage:
             self._add(ticket_id)
             return True
         return time.time() - stored_time < self.grace_period_s
+
+    def set_dir(self, file_path: Path) -> None:
+        if self.file is not None:
+            self.file.close()
+        self.log_path = file_path
+        self.file = open(self.log_path / "ids.txt", "w", encoding="utf-8")
 
     def _add(self, ticket_id: int) -> None:
         if self.file is None:

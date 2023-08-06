@@ -2,7 +2,7 @@ import argparse
 from typing import Any
 from Crypto.PublicKey.RSA import RsaKey
 from . import display_utils as du
-from . import crypto
+from . import signing
 from . import id_storage as ids
 from . import qr
 
@@ -19,7 +19,7 @@ def process_frame(frame: Any, key: RsaKey, trigger: du.Trigger, storage: ids.IdS
         trigger.show_frame_denied(frame, ("Wrong format", frame_points))
         return
     message, ticket_id, signature = decode_result
-    is_verified = crypto.verify_message(
+    is_verified = signing.verify_message(
         f"{message}_{ticket_id}", signature, key)
     if not is_verified:
         trigger.show_frame_denied(frame, ("Invalid signature", frame_points))
@@ -38,7 +38,7 @@ def main() -> None:
     public_key_file = parsed_args.public_key
     id_storage_path = parsed_args.id_storage_path
 
-    key = crypto.read_key(public_key_file)
+    key = signing.read_key(public_key_file)
     trigger = du.Trigger(3)
     with ids.IdStorage(id_storage_path, 5) as id_storage:
         # pylint: disable=maybe-no-member

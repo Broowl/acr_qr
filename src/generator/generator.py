@@ -2,19 +2,19 @@ from pathlib import Path
 import argparse
 import os
 
-from . import signing
-from . import config
-from . import gui
-from . import qr
+from generator_lib.signing import generate_or_get_keys, sign_message
+from generator_lib.config import Config
+from generator_lib.gui import create, ProgressIndicator
+from generator_lib.qr import save_signed_message
 
 
-def generate(gen_config: config.Config, progress_indicator: gui.ProgressIndicator) -> None:
-    key = signing.generate_or_get_keys(gen_config.key_dir)
+def generate(gen_config: Config, progress_indicator: ProgressIndicator) -> None:
+    key = generate_or_get_keys(gen_config.key_dir)
     progress_indicator.set_maximum(gen_config.num_qr_codes)
     for i_code in range(gen_config.num_qr_codes):
         data = f"{gen_config.event_name}_{i_code}"
-        signature = signing.sign_message(data, key)
-        qr.save_signed_message(data, signature, os.path.join(
+        signature = sign_message(data, key)
+        save_signed_message(data, signature, os.path.join(
             gen_config.out_dir, gen_config.event_name, f"{i_code}.png"))
         progress_indicator.set_progress(i_code)
 
@@ -41,9 +41,9 @@ def main() -> None:
     if parsed_args.num_codes is not None:
         num_codes = parsed_args.num_codes
 
-    initial_config = config.Config(event_name, num_codes, out_dir, key_dir)
+    initial_config = Config(event_name, num_codes, out_dir, key_dir)
 
-    gui.create(generate, initial_config)
+    create(generate, initial_config)
 
 
 if __name__ == "__main__":

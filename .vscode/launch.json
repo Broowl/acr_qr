@@ -8,7 +8,7 @@
             "name": "Run generator",
             "type": "python",
             "request": "launch",
-            "program": "generator/main.py",
+            "program": "src/generator/generator.py",
             "args": ["-o", "data/codes", "-k", "data/keys_short"],
             "console": "integratedTerminal",
             "justMyCode": true
@@ -17,7 +17,7 @@
             "name": "Run scanner",
             "type": "python",
             "request": "launch",
-            "program": "scanner/main.py",
+            "program": "src/scanner/scanner.py",
             "args": ["data/keys_short/public.pem", "data/id_lists/ids.txt"],
             "console": "integratedTerminal",
             "justMyCode": true,

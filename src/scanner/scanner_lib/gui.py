@@ -12,9 +12,8 @@ from .config import Config
 class FramePainter:
     """Class which can be used to paint frames in the GUI"""
 
-    def __init__(self, label: QtWidget.QLabel, size_getter: Callable[[], QtCore.QSize]) -> None:
+    def __init__(self, label: QtWidget.QLabel) -> None:
         self.label = label
-        self.size_getter = size_getter
 
     def paint(self, frame: Any) -> None:
         height, width, _ = frame.shape
@@ -22,7 +21,7 @@ class FramePainter:
         image = QtGui.QImage(frame.data, width, height,
                              bytes_per_line, QtGui.QImage.Format_BGR888)
         scaled_image = image.scaled(
-            self.size_getter(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+            self.label.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.label.setPixmap(QtGui.QPixmap(scaled_image))
 
 
@@ -70,14 +69,14 @@ class MainWindow(QtWidget.QMainWindow):
         self._init_log_folder_menu()
         self._init_key_path_menu()
         self.image_label = QtWidget.QLabel()
-        self.frame_painter = FramePainter(
-            self.image_label, self.image_label.size)
+        self.frame_painter = FramePainter(self.image_label)
         self.widget_layout.addWidget(self.image_label)
 
         widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)
 
         self.resize(650, 550)
+        self.size
         self.setCentralWidget(widget)
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)

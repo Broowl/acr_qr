@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import time
 from io import TextIOWrapper
@@ -8,14 +9,14 @@ from typing import Dict, Optional, Any
 class IdStorage:
     """Class for storing scanned ticket IDs"""
 
-    def __init__(self, log_path: Path, grace_period_s: int) -> None:
-        self.log_path = log_path
+    def __init__(self, log_dir: Path, grace_period_s: int) -> None:
+        self.log_dir = log_dir
         self.grace_period_s = grace_period_s
         self.storage: Dict[int, float] = {}
         self.file: Optional[TextIOWrapper] = None
 
     def __enter__(self) -> Any:
-        self.file = open(self.log_path / "ids.txt", "w", encoding="utf-8")
+        self._save_open()
         return self
 
     def __exit__(self,
@@ -32,11 +33,11 @@ class IdStorage:
             return True
         return time.time() - stored_time < self.grace_period_s
 
-    def set_dir(self, file_path: Path) -> None:
+    def set_dir(self, log_dir: Path) -> None:
         if self.file is not None:
             self.file.close()
-        self.log_path = file_path
-        self.file = open(self.log_path / "ids.txt", "w", encoding="utf-8")
+        self.log_dir = log_dir
+        self._save_open()
 
     def _add(self, ticket_id: int) -> None:
         if self.file is None:
@@ -47,3 +48,8 @@ class IdStorage:
         self.file.write(
             f"{local_time.tm_year}-{local_time.tm_mon}-{local_time.tm_mday} {local_time.tm_hour}:{local_time.tm_min}:{local_time.tm_sec},{ticket_id}\n")
         self.file.flush()
+
+    def _save_open(self) -> None:
+        if (not os.path.exists(self.log_dir)):
+            os.makedirs(self.log_dir)
+        self.file = open(self.log_dir / "ids.txt", "w", encoding="utf-8")

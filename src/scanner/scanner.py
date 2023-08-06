@@ -1,8 +1,8 @@
 import argparse
 from pathlib import Path
 from typing import cast
-from scanner_lib.signing import SignatureValidator
-from scanner_lib.display_utils import Trigger
+from scanner_lib.signature_validator import SignatureValidator
+from scanner_lib.display_utils import QrCodeImageDrawer
 from scanner_lib.id_storage import IdStorage
 from scanner_lib.qr import decode_message, read, CameraCapture
 from scanner_lib.gui import ScannerGui
@@ -13,7 +13,7 @@ class Scanner:
     """Main class which handles scanning of QR codes"""
     def __init__(self, camera_capture: CameraCapture,
                  validator: SignatureValidator,
-                 trigger: Trigger,
+                 trigger: QrCodeImageDrawer,
                  storage: IdStorage) -> None:
         self.camera_capture = camera_capture
         self.validator = validator
@@ -67,7 +67,7 @@ def main() -> None:
 
     gui = ScannerGui(initial_config)
     painter = gui.get_painter()
-    trigger = Trigger(3, painter)
+    trigger = QrCodeImageDrawer(3, painter)
     with IdStorage(log_dir, 5) as id_storage_any:
         id_storage = cast(IdStorage, id_storage_any)
         with CameraCapture() as camera_capture:

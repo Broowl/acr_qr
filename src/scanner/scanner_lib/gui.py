@@ -9,8 +9,8 @@ import PyQt5.QtGui as QtGui
 from .config import Config
 
 
-class FramePainter:
-    """Class which can be used to paint frames in the GUI"""
+class ImagePainter:
+    """Class which can be used to paint images in the GUI"""
 
     def __init__(self, label: QtWidget.QLabel) -> None:
         self.label = label
@@ -64,7 +64,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
 
     def _init_image_frame(self) -> None:
         image_label = QtWidget.QLabel()
-        self.frame_painter = FramePainter(image_label)
+        self.frame_painter = ImagePainter(image_label)
         self.widget_layout.addWidget(image_label)
 
     def _notify_timer_listener(self) -> None:
@@ -105,6 +105,9 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
         self.log_dir_changed_listener = log_dir_changed_listener
 
+    def get_painter(self) -> ImagePainter:
+        return self.frame_painter
+
 
 class ScannerGui:
     """Class representing the generic interface the GUI must provide"""
@@ -113,8 +116,8 @@ class ScannerGui:
         self.app = QtWidget.QApplication(sys.argv)
         self.window = ScannerQtMainWindow(default_config)
 
-    def get_painter(self) -> FramePainter:
-        return self.window.frame_painter
+    def get_painter(self) -> ImagePainter:
+        return self.window.get_painter()
 
     def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
         self.window.set_timer_listener(timer_listener)

@@ -4,7 +4,7 @@ from typing import Any, Optional
 import cv2
 import numpy as np
 
-from .gui import FramePainter
+from .gui import ImagePainter
 
 
 @dataclass
@@ -22,10 +22,10 @@ class ErrorArgs:
     points: Any
 
 
-class Trigger:
-    """Class for displaying smooth frames around detected QR-codes"""
+class QrCodeImageDrawer:
+    """Class for displaying images with smooth frames around detected QR-codes"""
 
-    def __init__(self, trigger_length: float, painter: FramePainter) -> None:
+    def __init__(self, trigger_length: float, painter: ImagePainter) -> None:
         self.timer: Optional[float] = None
         self.trigger_length = trigger_length
         self.args: Optional[SuccessArgs | ErrorArgs] = None

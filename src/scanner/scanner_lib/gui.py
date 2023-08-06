@@ -76,7 +76,6 @@ class MainWindow(QtWidget.QMainWindow):
         widget.setLayout(self.widget_layout)
 
         self.resize(650, 550)
-        self.size
         self.setCentralWidget(widget)
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)

@@ -2,7 +2,7 @@ import base64
 import re
 from types import TracebackType
 from urllib.parse import unquote_to_bytes
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 import cv2
 
 
@@ -27,9 +27,11 @@ def decode_message(data: str) -> tuple[str, int, bytes] | None:
 
 
 class CameraCapture:
+    """Class which represents camera"""
+
     def __init__(self) -> None:
         self.capture: Optional[cv2.VideoCapture] = None
-        
+
     def __enter__(self) -> Any:
         self.capture = cv2.VideoCapture(0)
         if not self.capture.isOpened():
@@ -41,13 +43,11 @@ class CameraCapture:
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> None:
         if self.capture is not None:
-             self.capture.release()
-             cv2.destroyAllWindows()
-        
+            self.capture.release()
+            cv2.destroyAllWindows()
+
     def get_frame(self) -> Any:
         if self.capture is None:
             raise RuntimeError("VideoCapture not initialized")
-        ret, frame = self.capture.read()
+        _, frame = self.capture.read()
         return frame
-
-   

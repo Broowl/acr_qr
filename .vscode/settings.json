@@ -1,3 +1,4 @@
 {
-  "mypy.configFile": "mypy.ini"
+  "mypy.configFile": "mypy.ini",
+  "pylint.args": ["--rcfile=./.pylintrc"]
 }

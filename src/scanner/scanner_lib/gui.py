@@ -1,25 +1,24 @@
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any, Callable
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
-import numpy as np
-import numpy.typing as npt
 from .config import Config
 
 
 class FramePainter:
+    """Class which can be used to paint frames in the GUI"""
     def __init__(self, label: QtWidget.QLabel) -> None:
         self.label = label
 
     def paint(self, frame: Any) -> None:
-        height, width, channel = frame.shape
+        height, width, _ = frame.shape
         bytes_per_line = 3 * width
-        qImg = QtGui.QImage(frame.data, width, height, bytes_per_line, QtGui.QImage.Format_BGR888)
-        self.label.setPixmap(QtGui.QPixmap(qImg))
+        image = QtGui.QImage(frame.data, width, height, bytes_per_line, QtGui.QImage.Format_BGR888)
+        self.label.setPixmap(QtGui.QPixmap(image))
 
 
 class MainWindow(QtWidget.QMainWindow):

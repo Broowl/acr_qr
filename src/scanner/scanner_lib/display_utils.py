@@ -9,6 +9,7 @@ from .gui import FramePainter
 
 @dataclass
 class SuccessArgs:
+    """Class which holds the data necessary to create a QR-code frame indicating success"""
     event: str
     ticket_id: int
     points: Any
@@ -16,6 +17,7 @@ class SuccessArgs:
 
 @dataclass
 class ErrorArgs:
+    """Class which holds the data necessary to create a QR-code frame indicating an error"""
     reason: str
     points: Any
 
@@ -53,11 +55,11 @@ class Trigger:
         return time.time() - self.timer < self.trigger_length
 
     def _show_frame_stored(self, frame: Any, painter: FramePainter) -> None:
-        if type(self.args) is SuccessArgs:
+        if isinstance(self.args, SuccessArgs):
             painter.paint(decorate_frame_green(
                 frame, self.args.event, self.args.ticket_id, self.args.points))
             return
-        if type(self.args) is ErrorArgs:
+        if isinstance(self.args, ErrorArgs):
             painter.paint(decorate_frame_red(
                 frame, self.args.reason, self.args.points))
 

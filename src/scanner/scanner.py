@@ -7,10 +7,12 @@ from scanner_lib.id_storage import IdStorage
 from scanner_lib.qr import decode_message, read, CameraCapture, scan_for_cameras
 from scanner_lib.gui import ScannerGui
 from scanner_lib.config import Config
+from scanner_lib.event_processor import EventProcessor, EventType, ProcessFrameEvent, SetKeyPathEvent, SetLogDirEvent, SetCameraEvent
 
 
 class Scanner:
     """Main class which handles scanning of QR codes"""
+
     def __init__(self, camera_capture: CameraCapture,
                  validator: SignatureValidator,
                  qr_code_image_drawer: QrCodeImageDrawer,
@@ -72,12 +74,31 @@ def main() -> None:
         id_storage = cast(IdStorage, id_storage_any)
         with CameraCapture() as camera_capture_any:
             camera_capture = cast(CameraCapture, camera_capture_any)
-            scanner = Scanner(camera_capture, validator, qr_code_image_drawer, id_storage)
-            gui.set_timer_listener(scanner.process_frame)
-            gui.set_key_path_changed_listener(validator.set_key)
-            gui.set_log_dir_changed_listener(id_storage.set_dir)
-            gui.set_camera_listener(camera_capture.set_camera)
+            scanner = Scanner(camera_capture, validator,
+                              qr_code_image_drawer, id_storage)
+            event_processor = EventProcessor()
+
+            event_processor.register_processor(
+                EventType.PROCESS_FRAME, lambda _: scanner.process_frame())
+            event_processor.register_processor(EventType.SET_KEY_PATH, lambda event: validator.set_key(
+                event.key_path))
+            event_processor.register_processor(
+                EventType.SET_LOG_DIR, lambda event: id_storage.set_dir(event.log_dir))
+            event_processor.register_processor(
+                EventType.SET_CAMERA, lambda event: camera_capture.set_camera(event.camera_index))
+
+            gui.set_timer_listener(
+                lambda: event_processor.push(ProcessFrameEvent()))
+            gui.set_key_path_changed_listener(
+                lambda key_path: event_processor.push(SetKeyPathEvent(key_path)))
+            gui.set_log_dir_changed_listener(
+                lambda log_dir: event_processor.push(SetLogDirEvent(log_dir)))
+            gui.set_camera_listener(
+                lambda camera_index: event_processor.push(SetCameraEvent(camera_index)))
+
+            event_processor.start()
             gui.run()
+            event_processor.stop()
 
 
 if __name__ == "__main__":

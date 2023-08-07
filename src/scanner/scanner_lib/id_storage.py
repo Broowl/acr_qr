@@ -50,6 +50,6 @@ class IdStorage:
         self.file.flush()
 
     def _save_open(self) -> None:
-        if (not os.path.exists(self.log_dir)):
+        if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.file = open(self.log_dir / "ids.txt", "w", encoding="utf-8")

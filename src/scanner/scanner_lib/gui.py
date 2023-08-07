@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, List
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
@@ -46,12 +46,23 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def _on_select_key_path_menu_triggered(self) -> None:
         self.key_path_menu.show()
 
+    def _on_camera_selected(self, camera: int) -> None:
+        if self.camera_listener is not None:
+            self.camera_listener(camera)
+
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
         file_menu.addAction("Wähle Key Datei").triggered.connect(
             self._on_select_key_path_menu_triggered)
         file_menu.addAction("Ausgabeordner wählen").triggered.connect(
             self._on_select_log_folder_menu_triggered)
+
+    def _init_config_menu(self) -> None:
+        config_menu = self.menuBar().addMenu("Konfiguration")
+        camera_menu = config_menu.addMenu("Kamera ändern")
+        for camera in self.camera_list:
+            camera_menu.addAction(f"{camera}").triggered.connect(
+                lambda _, c=camera: self._on_camera_selected(c))
 
     def _init_log_folder_menu(self) -> None:
         self.log_folder_menu = QtWidget.QFileDialog(
@@ -71,19 +82,22 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         if self.timer_listener is not None:
             self.timer_listener()
 
-    def __init__(self, default_config: Config):
+    def __init__(self, default_config: Config, camera_list: List[int]):
         super().__init__()
 
         self.timer_listener: Optional[Callable[[], None]] = None
         self.key_path_changed_listener: Optional[Callable[[Path], None]] = None
         self.log_dir_changed_listener: Optional[Callable[[Path], None]] = None
+        self.camera_listener: Optional[Callable[[int], None]] = None
         self.config: Config = default_config
+        self.camera_list = camera_list
 
         self.setWindowTitle("ACR QR-Code Scanner")
         self.widget_layout = QtWidget.QVBoxLayout()
         self._init_file_menu()
         self._init_log_folder_menu()
         self._init_key_path_menu()
+        self._init_config_menu()
         self._init_image_frame()
 
         widget = QtWidget.QWidget()
@@ -108,13 +122,16 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def get_painter(self) -> ImagePainter:
         return self.frame_painter
 
+    def set_camera_listener(self, listener:  Callable[[int], None]) -> None:
+        self.camera_listener = listener
+
 
 class ScannerGui:
     """Class representing the generic interface the GUI must provide"""
 
-    def __init__(self, default_config: Config) -> None:
+    def __init__(self, default_config: Config, camera_list: List[int]) -> None:
         self.app = QtWidget.QApplication(sys.argv)
-        self.window = ScannerQtMainWindow(default_config)
+        self.window = ScannerQtMainWindow(default_config, camera_list)
 
     def get_painter(self) -> ImagePainter:
         return self.window.get_painter()
@@ -127,6 +144,9 @@ class ScannerGui:
 
     def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
         self.window.set_log_dir_changed_listener(log_dir_changed_listener)
+
+    def set_camera_listener(self, listener:  Callable[[int], None]) -> None:
+        self.window.set_camera_listener(listener)
 
     def run(self) -> None:
         self.window.show()

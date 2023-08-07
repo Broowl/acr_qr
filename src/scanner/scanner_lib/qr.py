@@ -2,7 +2,7 @@ import base64
 import re
 from types import TracebackType
 from urllib.parse import unquote_to_bytes
-from typing import Any, Optional
+from typing import Any, List, Optional
 import cv2
 
 
@@ -51,3 +51,24 @@ class CameraCapture:
             raise RuntimeError("VideoCapture not initialized")
         _, frame = self.capture.read()
         return frame
+
+    def set_camera(self, index: int) -> None:
+        if self.capture is not None:
+            self.capture.release()
+        self.capture = cv2.VideoCapture(index)
+        if not self.capture.isOpened():
+            raise IOError("Cannot open webcam")
+
+
+def scan_for_cameras() -> List[int]:
+    index = 0
+    arr = []
+    while True:
+        cap = cv2.VideoCapture(index)
+        if not cap.read()[0]:
+            break
+        else:
+            arr.append(index)
+        cap.release()
+        index += 1
+    return arr

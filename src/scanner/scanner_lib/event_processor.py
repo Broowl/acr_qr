@@ -81,10 +81,7 @@ class EventProcessor:
         self.processors[event_type] = handler
 
     def push(self, event: Event) -> None:
-        try:
-            self.event_queue.put(event, block=False)
-        except queue.Full:
-            return
+        self.event_queue.put(event)
 
     def start(self) -> None:
         self.processor_thread = threading.Thread(target=self._process, args=())

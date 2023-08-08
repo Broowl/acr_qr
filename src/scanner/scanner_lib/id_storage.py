@@ -4,16 +4,17 @@ import time
 from io import TextIOWrapper
 from types import TracebackType
 from typing import Dict, Optional, Any
-
+from .persistence import Persistence
 
 class IdStorage:
     """Class for storing scanned ticket IDs"""
 
-    def __init__(self, log_dir: Path, grace_period_s: int) -> None:
+    def __init__(self, log_dir: Path, grace_period_s: int, persistence: Persistence) -> None:
         self.log_dir = log_dir
         self.grace_period_s = grace_period_s
         self.storage: Dict[int, float] = {}
         self.file: Optional[TextIOWrapper] = None
+        self.persistence = persistence
 
     def __enter__(self) -> Any:
         self._save_open()
@@ -38,6 +39,7 @@ class IdStorage:
             self.file.close()
         self.log_dir = log_dir
         self._save_open()
+        self.persistence.persist_log_dir(log_dir)
 
     def _add(self, ticket_id: int) -> None:
         if self.file is None:

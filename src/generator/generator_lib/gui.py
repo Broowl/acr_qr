@@ -52,6 +52,9 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
 
     def _set_out_dir(self, file: str) -> None:
         self.config.out_dir = Path(file)
+        self.progress_indicator.out_dir = self.config.out_dir
+        if self.out_dir_listener is not None:
+            self.out_dir_listener(self.config.out_dir)
 
     def _on_event_name_set(self) -> None:
         self.config.event_name = self.event_name_edit.text()
@@ -66,18 +69,18 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         if self.callback is not None:
             self.callback(self.config)
 
-    def _on_select_output_folder_menu_triggered(self) -> None:
-        self._set_out_dir(self.output_folder_menu.getExistingDirectory())
+    def _on_select_out_dir_menu_triggered(self) -> None:
+        self._set_out_dir(self.out_dir_menu.getExistingDirectory())
 
-    def _on_open_key_folder_menu_triggered(self) -> None:
+    def _on_open_key_dir_menu_triggered(self) -> None:
         open_folder(self.config.key_dir)
 
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
         file_menu.addAction("Key Ordner öffnen").triggered.connect(
-            self._on_open_key_folder_menu_triggered)
+            self._on_open_key_dir_menu_triggered)
         file_menu.addAction("Ausgabeordner wählen").triggered.connect(
-            self._on_select_output_folder_menu_triggered)
+            self._on_select_out_dir_menu_triggered)
 
     def _init_event_name_edit(self) -> None:
         self.event_name_edit = QtWidget.QLineEdit('')
@@ -102,14 +105,15 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.progress_bar = QtWidget.QProgressBar()
         self.widget_layout.addWidget(self.progress_bar)
 
-    def _init_output_folder_menu(self) -> None:
-        self.output_folder_menu = QtWidget.QFileDialog(
+    def _init_out_dir_menu(self) -> None:
+        self.out_dir_menu = QtWidget.QFileDialog(
             directory=str(self.config.out_dir))
 
     def __init__(self, default_config: Config):
         super().__init__()
 
         self.callback: Optional[Callable[[Config], None]] = None
+        self.out_dir_listener: Optional[Callable[[Path], None]] = None
         self.config: Config = default_config
 
         self.setWindowTitle("ACR QR-Code Generator")
@@ -121,7 +125,9 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_num_qr_codes_edit()
         self._init_start_button()
         self._init_progress_bar()
-        self._init_output_folder_menu()
+        self._init_out_dir_menu()
+        self.progress_indicator = ProgressIndicator(
+            self.progress_bar, self.start_button, self.config.out_dir)
 
         widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)
@@ -133,8 +139,10 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.callback = generator
 
     def get_progress_indicator(self) -> ProgressIndicator:
-        return ProgressIndicator(
-            self.progress_bar, self.start_button, self.config.out_dir)
+        return self.progress_indicator
+    
+    def set_out_dir_listener(self, listener: Callable[[Path], None]) -> None:
+        self.out_dir_listener = listener
 
 
 class GeneratorGui:
@@ -149,6 +157,9 @@ class GeneratorGui:
 
     def get_progress_indicator(self) -> ProgressIndicator:
         return self.window.get_progress_indicator()
+
+    def set_out_dir_listener(self, listener: Callable[[Path], None]) -> None:
+        self.window.set_out_dir_listener(listener)
 
     def run(self) -> None:
         self.window.show()

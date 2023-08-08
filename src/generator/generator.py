@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse
 import os
-
+from generator_lib.persistence import Persistence, PersistedValues
 from generator_lib.signing import generate_or_get_keys, sign_message
 from generator_lib.config import Config
 from generator_lib.gui import GeneratorGui, ProgressIndicator
@@ -36,10 +36,14 @@ def main() -> None:
     default_dir = Path.home() / "Documents" / "ACR_QR_Generator"
     out_dir = default_dir / "Codes"
     key_dir = default_dir / "Keys"
+    config_path = default_dir / "config.json"
     event_name: str = ""
     num_codes: int = 100
+    persistence = Persistence(config_path, PersistedValues(out_dir))
+    out_dir = persistence.get_persisted_out_dir()
     if parsed_args.out_dir is not None:
         out_dir = Path(parsed_args.out_dir)
+        persistence.persist_out_dir(out_dir)
     if parsed_args.key_dir is not None:
         key_dir = Path(parsed_args.key_dir)
     if parsed_args.event_name is not None:
@@ -52,7 +56,9 @@ def main() -> None:
     gui = GeneratorGui(initial_config)
     progress_indicator = gui.get_progress_indicator()
     generator = Generator(progress_indicator)
+    
     gui.set_generator(generator.generate)
+    gui.set_out_dir_listener(persistence.persist_out_dir)
     gui.run()
 
 

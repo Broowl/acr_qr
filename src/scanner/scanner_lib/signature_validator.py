@@ -4,15 +4,19 @@ from typing import Optional
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 from Crypto.Hash import SHA256
+from .persistence import Persistence
 
 
 class SignatureValidator:
     """Class which verifies signatures"""
-    def __init__(self, file_name: Path) -> None:
+
+    def __init__(self, file_name: Path, persistence: Persistence) -> None:
         self.key: Optional[RSA.RsaKey] = read_key(file_name)
+        self.persistence = persistence
 
     def set_key(self, file_name: Path) -> None:
         self.key = read_key(file_name)
+        self.persistence.persist_key_path(file_name)
 
     def verify_message(self, message: str, signature: bytes) -> bool:
         if self.key is None:

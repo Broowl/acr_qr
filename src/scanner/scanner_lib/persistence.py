@@ -14,7 +14,7 @@ class PersistedValues:
 
 
 class Persistence:
-    """Class for storing scanned ticket IDs"""
+    """Class for writing and reading persisted scanner settings"""
 
     def __init__(self, config_path: Path, default: PersistedValues) -> None:
         self.config_path = config_path

@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import time
 from typing import cast
 from scanner_lib.persistence import Persistence, PersistedValues
 from scanner_lib.signature_validator import SignatureValidator
@@ -8,7 +9,11 @@ from scanner_lib.id_storage import IdStorage
 from scanner_lib.qr import decode_message, read, CameraCapture, scan_for_cameras
 from scanner_lib.gui import ScannerGui
 from scanner_lib.config import Config
-from scanner_lib.event_processor import EventProcessor, EventType, ProcessFrameEvent, SetKeyPathEvent, SetLogDirEvent, SetCameraEvent
+from scanner_lib.event_processor import EventProcessor,\
+    ProcessFrameEvent, ProcessFrameEventHandler, \
+    SetKeyPathEvent, SetKeyPathEventHandler, \
+    SetLogDirEvent, SetLogDirEventHandler,\
+    SetCameraEvent, SetCameraEventHandler
 
 
 class Scanner:
@@ -23,7 +28,9 @@ class Scanner:
         self.qr_code_image_drawer = qr_code_image_drawer
         self.storage = storage
 
-    def process_frame(self) -> None:
+    def process_frame(self, origin_time: float) -> None:
+        if time.time() - origin_time > 1:
+            return
         frame = self.camera_capture.get_frame()
         read_result = read(frame)
         if read_result is None:
@@ -62,7 +69,8 @@ def main() -> None:
     config_path = default_dir / "config.json"
     camera_index = 0
 
-    persistence = Persistence(config_path, PersistedValues(log_dir, public_key_path, camera_index))
+    persistence = Persistence(config_path, PersistedValues(
+        log_dir, public_key_path, camera_index))
     log_dir = persistence.get_persisted_log_dir()
     public_key_path = persistence.get_persisted_key_path()
     camera_index = persistence.get_persisted_camera_index()
@@ -89,16 +97,16 @@ def main() -> None:
             event_processor = EventProcessor()
 
             event_processor.register_processor(
-                EventType.PROCESS_FRAME, lambda _: scanner.process_frame())
-            event_processor.register_processor(EventType.SET_KEY_PATH, lambda event: validator.set_key(
-                event.key_path))
+                ProcessFrameEventHandler(lambda event: scanner.process_frame(event.origin_time)))
             event_processor.register_processor(
-                EventType.SET_LOG_DIR, lambda event: id_storage.set_dir(event.log_dir))
+                SetKeyPathEventHandler(lambda event: validator.set_key(event.key_path)))
             event_processor.register_processor(
-                EventType.SET_CAMERA, lambda event: camera_capture.set_camera(event.camera_index))
+                SetLogDirEventHandler(lambda event: id_storage.set_dir(event.log_dir)))
+            event_processor.register_processor(
+                SetCameraEventHandler(lambda event: camera_capture.set_camera(event.camera_index)))
 
             gui.set_timer_listener(
-                lambda: event_processor.push(ProcessFrameEvent()))
+                lambda: event_processor.push(ProcessFrameEvent(time.time())))
             gui.set_key_path_changed_listener(
                 lambda key_path: event_processor.push(SetKeyPathEvent(key_path)))
             gui.set_log_dir_changed_listener(

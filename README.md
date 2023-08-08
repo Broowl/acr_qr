@@ -9,4 +9,12 @@ The scanner decodes the information in the generated QR codes and verifies the s
 2. Run `pipenv sync` to install the required dependencies
 3. Open the project in VS Code
 4. Install the recommended extensions
-5. Select the pipenv as Python interpreter
+5. Select the *pipenv* as Python interpreter
+
+# Distribution
+
+To create executables for the generator and the scanner run the following commands:
+- Generator: `pipenv run pyinstaller .\src\generator\generator.py`
+- Scanner: `pipenv run pyinstaller .\src\scanner\scanner.py`
+
+Afterwards you can find the packaged executables in the *dist* folder.

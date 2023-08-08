@@ -3,3 +3,6 @@
 *.png
 *.pem
 data
+dist
+build
+*.spec

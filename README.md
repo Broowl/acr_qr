@@ -1,7 +1,7 @@
 # A QR-Code generator and scanner
 Both the scanner and the generator have a graphical user interface (GUI).
-The generator creates digitally signed QR codes intended for E-Tickets to events.
-The scanner has decodes the information in the generated QR codes and verifies the signature.
+The generator creates digitally signed QR codes intended for e-tickets.
+The scanner decodes the information in the generated QR codes and verifies the signature.
 
 # Setup development environment
 

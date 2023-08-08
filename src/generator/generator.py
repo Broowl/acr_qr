@@ -56,7 +56,7 @@ def main() -> None:
     gui = GeneratorGui(initial_config)
     progress_indicator = gui.get_progress_indicator()
     generator = Generator(progress_indicator)
-    
+
     gui.set_generator(generator.generate)
     gui.set_out_dir_listener(persistence.persist_out_dir)
     gui.run()

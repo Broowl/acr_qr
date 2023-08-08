@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "matangover.mypy",
+        "ms-python.vscode-pylance",
+        "ms-python.pylint",
+        "ms-python.python"
+    ]
+}

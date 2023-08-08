@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from typing import cast
+from scanner_lib.persistence import Persistence, PersistedValues
 from scanner_lib.signature_validator import SignatureValidator
 from scanner_lib.display_utils import QrCodeImageDrawer
 from scanner_lib.id_storage import IdStorage
@@ -58,21 +59,30 @@ def main() -> None:
     default_dir = Path.home() / "Documents" / "ACR_QR_Scanner"
     log_dir = default_dir / "Logs"
     public_key_path = default_dir / "Keys" / "public.pem"
+    config_path = default_dir / "config.json"
+    camera_index = 0
+
+    persistence = Persistence(config_path, PersistedValues(log_dir, public_key_path, camera_index))
+    log_dir = persistence.get_persisted_log_dir()
+    public_key_path = persistence.get_persisted_key_path()
+    camera_index = persistence.get_persisted_camera_index()
 
     if parsed_args.log_dir is not None:
         log_dir = Path(parsed_args.log_dir)
+        persistence.persist_log_dir(log_dir)
     if parsed_args.public_key is not None:
         public_key_path = Path(parsed_args.public_key)
+        persistence.persist_key_path(public_key_path)
 
     initial_config = Config(log_dir, public_key_path)
-    validator = SignatureValidator(public_key_path)
+    validator = SignatureValidator(public_key_path, persistence)
 
     gui = ScannerGui(initial_config, scan_for_cameras())
     painter = gui.get_painter()
     qr_code_image_drawer = QrCodeImageDrawer(3, painter)
-    with IdStorage(log_dir, 5) as id_storage_any:
+    with IdStorage(log_dir, 5, persistence) as id_storage_any:
         id_storage = cast(IdStorage, id_storage_any)
-        with CameraCapture() as camera_capture_any:
+        with CameraCapture(camera_index, persistence) as camera_capture_any:
             camera_capture = cast(CameraCapture, camera_capture_any)
             scanner = Scanner(camera_capture, validator,
                               qr_code_image_drawer, id_storage)

@@ -10,8 +10,6 @@
             "request": "launch",
             "program": "src/generator/generator.py",
             "args": [
-                "-o",
-                "data/codes",
                 "-k",
                 "data/keys_short"
             ],
@@ -24,10 +22,6 @@
             "request": "launch",
             "program": "src/scanner/scanner.py",
             "args": [
-                "-k",
-                "data/keys_short/public.pem",
-                "-l",
-                "data/id_lists"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,

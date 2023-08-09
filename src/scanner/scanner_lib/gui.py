@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from threading import Lock
 from typing import Any, Callable, Optional, List
 
 import PyQt5.QtWidgets as QtWidget
@@ -14,15 +15,23 @@ class ImagePainter:
 
     def __init__(self, label: QtWidget.QLabel) -> None:
         self.label = label
+        self.lock = Lock()
+        self.image: Optional[QtGui.QImage] = None
 
     def paint(self, frame: Any) -> None:
         height, width, _ = frame.shape
         bytes_per_line = 3 * width
         image = QtGui.QImage(frame.data, width, height,
                              bytes_per_line, QtGui.QImage.Format_BGR888)
-        scaled_image = image.scaled(
-            self.label.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.label.setPixmap(QtGui.QPixmap(scaled_image))
+        with self.lock:
+            self.image = image
+
+    def do_paint(self) -> None:
+        with self.lock:
+            if self.image is not None:
+                scaled_image = self.image.scaled(
+                    self.label.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+                self.label.setPixmap(QtGui.QPixmap(scaled_image))
 
 
 class ScannerQtMainWindow(QtWidget.QMainWindow):
@@ -79,6 +88,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.widget_layout.addWidget(image_label)
 
     def _notify_timer_listener(self) -> None:
+        self.frame_painter.do_paint()
         if self.timer_listener is not None:
             self.timer_listener()
 

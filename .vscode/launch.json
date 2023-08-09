@@ -8,7 +8,7 @@
             "name": "Run generator",
             "type": "python",
             "request": "launch",
-            "program": "src/generator/generator.py",
+            "program": "src/generator/main.py",
             "args": [
                 "-k",
                 "data/keys_short"
@@ -20,7 +20,7 @@
             "name": "Run scanner",
             "type": "python",
             "request": "launch",
-            "program": "src/scanner/scanner.py",
+            "program": "src/scanner/main.py",
             "args": [
             ],
             "console": "integratedTerminal",

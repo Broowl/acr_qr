@@ -14,7 +14,7 @@ The scanner decodes the information in the generated QR codes and verifies the s
 # Distribution
 
 To create executables for the generator and the scanner run the following commands:
-- Generator: `pipenv run pyinstaller .\src\generator\generator.py`
-- Scanner: `pipenv run pyinstaller .\src\scanner\scanner.py`
+- Generator: `pipenv run pyinstaller .\src\generator\main.py`
+- Scanner: `pipenv run pyinstaller .\src\scanner\main.py`
 
 Afterwards you can find the packaged executables in the *dist* folder.

@@ -34,6 +34,40 @@ class ImagePainter:
                 self.label.setPixmap(QtGui.QPixmap(scaled_image))
 
 
+class StartWindow(QtWidget.QWidget):
+    """Startup menu class"""
+
+    def _init_event_name_edit(self) -> None:
+        self.event_name_edit = QtWidget.QLineEdit('')
+        self.event_name_edit.editingFinished.connect(self._on_event_name_set)
+        self.widget_layout.addWidget(self.event_name_edit)
+
+    def _init_ok_button(self) -> None:
+        self.start_button = QtWidget.QPushButton('Ok')
+        self.start_button.setEnabled(True)
+        self.start_button.clicked.connect(self._on_ok_button_pressed)
+        self.widget_layout.addWidget(self.start_button)
+
+    def __init__(self, callback: Callable[[str], None]) -> None:
+        super().__init__()
+        self.setWindowTitle("ACR QR-Code Scanner")
+        self.widget_layout = QtWidget.QVBoxLayout()
+        self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsname'))
+        self._init_event_name_edit()
+        self.event_name = ""
+        self.callback = callback
+        self._init_ok_button()
+        self.setLayout(self.widget_layout)
+
+    def _on_ok_button_pressed(self) -> None:
+        if self.callback is not None:
+            self.callback(self.event_name)
+        self.close()
+
+    def _on_event_name_set(self) -> None:
+        self.event_name = self.event_name_edit.text()
+
+
 class ScannerQtMainWindow(QtWidget.QMainWindow):
     """Class representing the QT GUI window"""
 
@@ -59,16 +93,22 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         if self.camera_listener is not None:
             self.camera_listener(camera)
 
-    def _on_open_online_help_menu_triggered(self)->None:
+    def _on_open_online_help_menu_triggered(self) -> None:
         git_hub_url = QtCore.QUrl("https://github.com/Broowl/acr_qr")
         QtGui.QDesktopServices.openUrl(git_hub_url)
 
-    def _on_open_license_menu_triggered(self)->None:
+    def _on_open_license_menu_triggered(self) -> None:
         license_path = QtCore.QUrl("LICENSE")
         QtGui.QDesktopServices.openUrl(license_path)
 
-    def _on_open_about_menu_triggered(self)->None:
+    def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
+
+    def _on_start_menu_closed(self, event_name: str) -> None:
+        if self.event_name_listener is not None:
+            self.event_name_listener(event_name)
+        self.timer.start()
+        self.show()
 
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
@@ -103,7 +143,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         if self.timer_listener is not None:
             self.timer_listener()
 
-    def _init_help_menu(self)-> None:
+    def _init_help_menu(self) -> None:
         help_menu = self.menuBar().addMenu("Hilfe")
         help_menu.addAction("Online Hilfe").triggered.connect(
             self._on_open_online_help_menu_triggered)
@@ -111,8 +151,8 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
             self._on_open_license_menu_triggered)
         help_menu.addAction("Über").triggered.connect(
             self._on_open_about_menu_triggered)
-        
-    def _init_about_message_box(self)->None:
+
+    def _init_about_message_box(self) -> None:
         self.about_box = QtWidget.QMessageBox()
         self.about_box.setText("Autor: Daniel Krieger<br>Version: 1.0.0")
         self.about_box.setWindowTitle("Über ACR QR-Code Generator")
@@ -124,6 +164,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.key_path_changed_listener: Optional[Callable[[Path], None]] = None
         self.log_dir_changed_listener: Optional[Callable[[Path], None]] = None
         self.camera_listener: Optional[Callable[[int], None]] = None
+        self.event_name_listener: Optional[Callable[[str], None]] = None
         self.config: Config = default_config
         self.camera_list = camera_list
 
@@ -145,7 +186,9 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)
         self.timer.timeout.connect(self._notify_timer_listener)
-        self.timer.start()
+        self.hide()
+        self.start_menu = StartWindow(self._on_start_menu_closed)
+        self.start_menu.show()
 
     def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
         self.timer_listener = timer_listener
@@ -155,6 +198,9 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
 
     def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
         self.log_dir_changed_listener = log_dir_changed_listener
+
+    def set_event_name_listener(self, event_name_listener: Callable[[str], None]) -> None:
+        self.event_name_listener = event_name_listener
 
     def get_painter(self) -> ImagePainter:
         return self.frame_painter
@@ -182,9 +228,11 @@ class ScannerGui:
     def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
         self.window.set_log_dir_changed_listener(log_dir_changed_listener)
 
-    def set_camera_listener(self, listener:  Callable[[int], None]) -> None:
-        self.window.set_camera_listener(listener)
+    def set_camera_listener(self, camera_listener:  Callable[[int], None]) -> None:
+        self.window.set_camera_listener(camera_listener)
+
+    def set_event_name_listener(self, event_name_listener: Callable[[str], None]) -> None:
+        self.window.set_event_name_listener(event_name_listener)
 
     def run(self) -> None:
-        self.window.show()
         self.app.exec()

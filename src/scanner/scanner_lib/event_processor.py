@@ -11,6 +11,7 @@ class EventType(Enum):
     SET_KEY_PATH = 2
     SET_LOG_DIR = 3
     SET_CAMERA = 4
+    SET_EVENT_NAME = 5
 
 
 class Event:
@@ -97,11 +98,26 @@ class SetCameraEventHandler(EventHandler[SetCameraEvent]):
     def __init__(self, handler: Callable[[SetCameraEvent], None]) -> None:
         super().__init__(handler, EventType.SET_CAMERA)
 
+class SetEventNameEvent(Event):
+    """Event signaling an event name change"""
+
+    def __init__(self, event_name: str) -> None:
+        super().__init__(EventType.SET_EVENT_NAME)
+        self.event_name = event_name
+
+
+class SetEventNameEventHandler(EventHandler[SetEventNameEvent]):
+    """SetEventNameEventHandler"""
+
+    def __init__(self, handler: Callable[[SetEventNameEvent], None]) -> None:
+        super().__init__(handler, EventType.SET_EVENT_NAME)
+
 
 EventHandlers = ProcessFrameEventHandler | \
     SetKeyPathEventHandler | \
     SetLogDirEventHandler | \
-    SetCameraEventHandler
+    SetCameraEventHandler | \
+    SetEventNameEventHandler
 
 
 class EventProcessor:

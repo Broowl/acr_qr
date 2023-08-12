@@ -4,6 +4,7 @@ from scanner_lib.display_utils import QrCodeImageDrawer
 from scanner_lib.id_storage import IdStorage
 from scanner_lib.qr import decode_message, read, CameraCapture
 
+
 class Scanner:
     """Main class which handles scanning of QR codes"""
 
@@ -15,6 +16,7 @@ class Scanner:
         self.validator = validator
         self.qr_code_image_drawer = qr_code_image_drawer
         self.storage = storage
+        self.event_name = ""
 
     def process_frame(self, origin_time: float) -> None:
         if time.time() - origin_time > 1:
@@ -31,6 +33,10 @@ class Scanner:
                 frame, ("Wrong format", frame_points))
             return
         message, ticket_id, signature = decode_result
+        if message != self.event_name:
+            self.qr_code_image_drawer.show_frame_denied(
+                frame, ("Wrong event name", frame_points))
+            return
         is_verified = self.validator.verify_message(
             f"{message}_{ticket_id}", signature)
         if not is_verified:
@@ -43,3 +49,6 @@ class Scanner:
             return
         self.qr_code_image_drawer.show_frame_verified(
             frame, (message, ticket_id, frame_points))
+
+    def set_event_name(self, event_name: str) -> None:
+        self.event_name = event_name

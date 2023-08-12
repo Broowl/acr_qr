@@ -13,8 +13,10 @@ from scanner_lib.event_processor import EventProcessor,\
     ProcessFrameEvent, ProcessFrameEventHandler, \
     SetKeyPathEvent, SetKeyPathEventHandler, \
     SetLogDirEvent, SetLogDirEventHandler,\
-    SetCameraEvent, SetCameraEventHandler
+    SetCameraEvent, SetCameraEventHandler, \
+    SetEventNameEvent, SetEventNameEventHandler
 from scanner_lib.scanner import Scanner
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -63,6 +65,8 @@ def main() -> None:
                 SetLogDirEventHandler(lambda event: id_storage.set_dir(event.log_dir)))
             event_processor.register_processor(
                 SetCameraEventHandler(lambda event: camera_capture.set_camera(event.camera_index)))
+            event_processor.register_processor(
+                SetEventNameEventHandler(lambda event: scanner.set_event_name(event.event_name)))
 
             gui.set_timer_listener(
                 lambda: event_processor.push(ProcessFrameEvent(time.time())))
@@ -72,6 +76,8 @@ def main() -> None:
                 lambda log_dir: event_processor.push(SetLogDirEvent(log_dir)))
             gui.set_camera_listener(
                 lambda camera_index: event_processor.push(SetCameraEvent(camera_index)))
+            gui.set_event_name_listener(
+                lambda event_name: event_processor.push(SetEventNameEvent(event_name)))
 
             event_processor.start()
             gui.run()

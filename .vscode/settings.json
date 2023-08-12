@@ -1,4 +1,9 @@
 {
   "mypy.configFile": "mypy.ini",
-  "pylint.args": ["--rcfile=./.pylintrc"]
+  "pylint.args": [
+    "--rcfile=./.pylintrc"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  }
 }

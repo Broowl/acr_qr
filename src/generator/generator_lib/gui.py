@@ -75,6 +75,17 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _on_open_key_dir_menu_triggered(self) -> None:
         open_folder(self.config.key_dir)
 
+    def _on_open_online_help_menu_triggered(self)->None:
+        git_hub_url = QtCore.QUrl("https://github.com/Broowl/acr_qr")
+        QtGui.QDesktopServices.openUrl(git_hub_url)
+
+    def _on_open_license_menu_triggered(self)->None:
+        license_path = QtCore.QUrl("LICENSE")
+        QtGui.QDesktopServices.openUrl(license_path)
+
+    def _on_open_about_menu_triggered(self)->None:
+        self.about_box.show()
+
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
         file_menu.addAction("Key Ordner öffnen").triggered.connect(
@@ -108,6 +119,20 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _init_out_dir_menu(self) -> None:
         self.out_dir_menu = QtWidget.QFileDialog(
             directory=str(self.config.out_dir))
+        
+    def _init_help_menu(self)-> None:
+        help_menu = self.menuBar().addMenu("Hilfe")
+        help_menu.addAction("Online Hilfe").triggered.connect(
+            self._on_open_online_help_menu_triggered)
+        help_menu.addAction("Lizenz").triggered.connect(
+            self._on_open_license_menu_triggered)
+        help_menu.addAction("Über").triggered.connect(
+            self._on_open_about_menu_triggered)
+        
+    def _init_about_message_box(self)->None:
+        self.about_box = QtWidget.QMessageBox()
+        self.about_box.setText("Autor: Daniel Krieger<br>Version: 1.0.0")
+        self.about_box.setWindowTitle("Über ACR QR-Code Generator")
 
     def __init__(self, default_config: Config):
         super().__init__()
@@ -126,6 +151,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_start_button()
         self._init_progress_bar()
         self._init_out_dir_menu()
+        self._init_help_menu()
+        self._init_about_message_box()
         self.progress_indicator = ProgressIndicator(
             self.progress_bar, self.start_button, self.config.out_dir)
 

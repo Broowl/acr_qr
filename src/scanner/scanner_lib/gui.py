@@ -59,6 +59,17 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         if self.camera_listener is not None:
             self.camera_listener(camera)
 
+    def _on_open_online_help_menu_triggered(self)->None:
+        git_hub_url = QtCore.QUrl("https://github.com/Broowl/acr_qr")
+        QtGui.QDesktopServices.openUrl(git_hub_url)
+
+    def _on_open_license_menu_triggered(self)->None:
+        license_path = QtCore.QUrl("LICENSE")
+        QtGui.QDesktopServices.openUrl(license_path)
+
+    def _on_open_about_menu_triggered(self)->None:
+        self.about_box.show()
+
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
         file_menu.addAction("Wähle Key Datei").triggered.connect(
@@ -92,6 +103,20 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         if self.timer_listener is not None:
             self.timer_listener()
 
+    def _init_help_menu(self)-> None:
+        help_menu = self.menuBar().addMenu("Hilfe")
+        help_menu.addAction("Online Hilfe").triggered.connect(
+            self._on_open_online_help_menu_triggered)
+        help_menu.addAction("Lizenz").triggered.connect(
+            self._on_open_license_menu_triggered)
+        help_menu.addAction("Über").triggered.connect(
+            self._on_open_about_menu_triggered)
+        
+    def _init_about_message_box(self)->None:
+        self.about_box = QtWidget.QMessageBox()
+        self.about_box.setText("Autor: Daniel Krieger<br>Version: 1.0.0")
+        self.about_box.setWindowTitle("Über ACR QR-Code Generator")
+
     def __init__(self, default_config: Config, camera_list: List[int]):
         super().__init__()
 
@@ -109,6 +134,8 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self._init_key_path_menu()
         self._init_config_menu()
         self._init_image_frame()
+        self._init_help_menu()
+        self._init_about_message_box()
 
         widget = QtWidget.QWidget()
         widget.setLayout(self.widget_layout)

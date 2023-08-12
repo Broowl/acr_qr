@@ -8,11 +8,8 @@
             "name": "Run generator",
             "type": "python",
             "request": "launch",
-            "program": "src/generator/main.py",
-            "args": [
-                "-k",
-                "data/keys_short"
-            ],
+            "program": "src/generator/generator_main.py",
+            "args": [],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -20,9 +17,8 @@
             "name": "Run scanner",
             "type": "python",
             "request": "launch",
-            "program": "src/scanner/main.py",
-            "args": [
-            ],
+            "program": "src/scanner/scanner_main.py",
+            "args": [],
             "console": "integratedTerminal",
             "justMyCode": true,
             "preLaunchTask": "delete_id_list"

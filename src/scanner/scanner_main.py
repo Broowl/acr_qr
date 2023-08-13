@@ -18,6 +18,11 @@ from scanner_lib.event_processor import EventProcessor,\
 from scanner_lib.scanner import Scanner
 
 
+def on_set_event_name(scanner: Scanner, id_storage: IdStorage, name: str) -> None:
+    scanner.set_event_name(name)
+    id_storage.set_event_name(name)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--public_key")
@@ -66,7 +71,7 @@ def main() -> None:
             event_processor.register_processor(
                 SetCameraEventHandler(lambda event: camera_capture.set_camera(event.camera_index)))
             event_processor.register_processor(
-                SetEventNameEventHandler(lambda event: scanner.set_event_name(event.event_name)))
+                SetEventNameEventHandler(lambda event: on_set_event_name(scanner, id_storage, event.event_name)))
 
             gui.set_timer_listener(
                 lambda: event_processor.push(ProcessFrameEvent(time.time())))

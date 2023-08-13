@@ -48,24 +48,30 @@ class StartWindow(QtWidget.QWidget):
         self.start_button.clicked.connect(self._on_ok_button_pressed)
         self.widget_layout.addWidget(self.start_button)
 
-    def __init__(self, callback: Callable[[str], None]) -> None:
+    def __init__(self, on_accepted_callback: Callable[[str], None], on_closed_callback: Callable[[], None]) -> None:
         super().__init__()
         self.setWindowTitle("ACR QR-Code Scanner")
         self.widget_layout = QtWidget.QVBoxLayout()
         self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsname'))
         self._init_event_name_edit()
         self.event_name = ""
-        self.callback = callback
+        self.on_accepted_callback = on_accepted_callback
+        self.on_closed_callback = on_closed_callback
         self._init_ok_button()
         self.setLayout(self.widget_layout)
 
     def _on_ok_button_pressed(self) -> None:
-        if self.callback is not None:
-            self.callback(self.event_name)
-        self.close()
+        if self.on_accepted_callback is not None:
+            self.on_accepted_callback(self.event_name)
+        self.hide()
 
     def _on_event_name_set(self) -> None:
         self.event_name = self.event_name_edit.text()
+
+    # pylint: disable=invalid-name
+    def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
+        self.on_closed_callback()
+        return super().closeEvent(close_event)
 
 
 class ScannerQtMainWindow(QtWidget.QMainWindow):
@@ -104,11 +110,14 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
 
-    def _on_start_menu_closed(self, event_name: str) -> None:
+    def _on_start_menu_accepted(self, event_name: str) -> None:
         if self.event_name_listener is not None:
             self.event_name_listener(event_name)
         self.timer.start()
         self.show()
+
+    def _on_start_menu_closed(self) -> None:
+        self.close()
 
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
@@ -135,6 +144,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
 
     def _init_image_frame(self) -> None:
         image_label = QtWidget.QLabel()
+        image_label.setMinimumSize(4 * 40, 3 * 40)
         self.frame_painter = ImagePainter(image_label)
         self.widget_layout.addWidget(image_label)
 
@@ -187,8 +197,8 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.timer.setInterval(33)
         self.timer.timeout.connect(self._notify_timer_listener)
         self.hide()
-        self.start_menu = StartWindow(self._on_start_menu_closed)
-        self.start_menu.show()
+        self.start_menu = StartWindow(
+            self._on_start_menu_accepted, self._on_start_menu_closed)
 
     def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
         self.timer_listener = timer_listener
@@ -207,6 +217,9 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
 
     def set_camera_listener(self, listener:  Callable[[int], None]) -> None:
         self.camera_listener = listener
+
+    def show_start_menu(self)-> None:
+        self.start_menu.show()
 
 
 class ScannerGui:
@@ -235,4 +248,5 @@ class ScannerGui:
         self.window.set_event_name_listener(event_name_listener)
 
     def run(self) -> None:
+        self.window.show_start_menu()
         self.app.exec()

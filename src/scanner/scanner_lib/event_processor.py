@@ -7,6 +7,7 @@ from typing import Callable, Generic, List, Optional, TypeVar
 
 class EventType(Enum):
     """Event types"""
+    DUMMY = 0
     PROCESS_FRAME = 1
     SET_KEY_PATH = 2
     SET_LOG_DIR = 3
@@ -124,7 +125,7 @@ class EventProcessor:
     """Event processor which dispatches GUI events"""
 
     def __init__(self) -> None:
-        self.event_queue: queue.Queue[Event] = queue.Queue()
+        self.event_queue: queue.SimpleQueue[Event] = queue.SimpleQueue()
         self.processors: List[EventHandlers] = []
         self.processor_thread: Optional[threading.Thread] = None
         self.stop_requested = False
@@ -147,5 +148,6 @@ class EventProcessor:
 
     def stop(self) -> None:
         self.stop_requested = True
+        self.push(Event(EventType.DUMMY)) # make sure thread is not blocked by get()
         if self.processor_thread is not None:
             self.processor_thread.join()

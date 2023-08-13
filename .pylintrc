@@ -18,3 +18,6 @@ extension-pkg-whitelist=PyQt5,Crypto
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
 ignored-modules=PyQt5,Crypto,cv2
+
+[FORMAT]
+max-line-length=120

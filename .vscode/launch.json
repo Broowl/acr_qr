@@ -20,8 +20,7 @@
             "program": "src/scanner/scanner_main.py",
             "args": [],
             "console": "integratedTerminal",
-            "justMyCode": true,
-            "preLaunchTask": "delete_id_list"
+            "justMyCode": true
         }
     ]
 }

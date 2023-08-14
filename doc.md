@@ -1,6 +1,0 @@
-- Konzertname + Signatur als QR Code
-- Problem: Duplikation
-- TBD: Client mit public key
-  - Web? Internet
-  - App? Installation
-  - Laptop? Scan (OpenCV?)

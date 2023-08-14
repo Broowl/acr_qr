@@ -212,6 +212,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.setCentralWidget(widget)
         self.setFixedSize(QtCore.QSize(
             int(self.size().width()*1.3), int(self.size().height() * 0.8)))
+        self.setWindowIcon(QtGui.QIcon("assets/generator.ico"))
 
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.callback = generator

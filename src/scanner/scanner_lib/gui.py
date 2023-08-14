@@ -75,6 +75,7 @@ class StartWindow(QtWidget.QWidget):
         self.on_closed_callback = on_closed_callback
         self._init_ok_button()
         self.setLayout(self.widget_layout)
+        self.setWindowIcon(QtGui.QIcon("assets/scanner.ico"))
 
     def _on_ok_button_pressed(self) -> None:
         if self.on_accepted_callback is not None:
@@ -222,6 +223,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.hide()
         self.start_menu = StartWindow(
             self._on_start_menu_accepted, self._on_start_menu_closed)
+        self.setWindowIcon(QtGui.QIcon("assets/scanner.ico"))
 
     def set_timer_listener(self, timer_listener: Callable[[], None]) -> None:
         self.timer_listener = timer_listener

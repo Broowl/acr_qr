@@ -35,7 +35,7 @@ def main() -> None:
         event_name = parsed_args.event_name
     if parsed_args.event_date is not None:
         event_date = datetime.strptime(
-            parsed_args.event_date, '%y-%m-%d').date()
+            parsed_args.event_date, '%Y-%m-%d').date()
     if parsed_args.num_codes is not None:
         num_codes = parsed_args.num_codes
 

@@ -15,7 +15,7 @@ class Generator:
         key = generate_or_get_keys(gen_config.key_dir)
         self.progress_indicator.set_maximum(gen_config.num_qr_codes)
         for i_code in range(gen_config.num_qr_codes):
-            data = f"{gen_config.event_name}_{gen_config.event_date.strftime('%y-%m-%d')}_{i_code}"
+            data = f"{gen_config.event_name}_{gen_config.event_date.strftime('%Y-%m-%d')}_{i_code}"
             signature = sign_message(data, key)
             folder_name = f"{gen_config.event_date.strftime('%Y-%m-%d')}_{gen_config.event_name}"
             file_name = f"{folder_name}_{i_code}.png"

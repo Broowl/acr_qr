@@ -176,7 +176,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         widget.setLayout(self.widget_layout)
 
         self.setCentralWidget(widget)
-        # self.setFixedSize(QtCore.QSize(600, 300))
+        self.setFixedSize(QtCore.QSize(
+            int(self.size().width()*1.3), int(self.size().height() * 0.8)))
 
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.callback = generator

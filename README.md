@@ -4,7 +4,7 @@ The scanner decodes the information in the generated QR codes and verifies the s
 
 # Getting started
 
-The documentation on how to use the can be found [here](doc). Currently the documentation and the GUI are only available in German.
+The documentation on how to use the programms can be found [here](doc). Currently the documentation and the GUI are only available in German.
 
 # Setup development environment
 

@@ -1,10 +1,13 @@
 import base64
+from dataclasses import dataclass
 import re
 from types import TracebackType
 from urllib.parse import unquote_to_bytes
 from typing import Any, List, Optional
+from datetime import date
 import cv2
 from .persistence import Persistence
+from .utils import str_to_date
 
 
 def read(image: Any) -> tuple[str, Any] | None:
@@ -15,16 +18,28 @@ def read(image: Any) -> tuple[str, Any] | None:
     return (decoded_info[0], points)
 
 
-def decode_message(data: str) -> tuple[str, int, bytes] | None:
-    matcher = re.compile(r"^(.*)_(\d+)__(.*)$")
+@dataclass
+class DecodeResult:
+    """Result of the decode_message function"""
+    encoded: str
+    event_name: str
+    event_date: date
+    ticket_id: int
+    signature: bytes
+
+
+def decode_message(data: str) -> DecodeResult | None:
+    matcher = re.compile(r"^((.*)_([-\d]+)_(\d+))__(.*)$")
     matches = re.match(matcher, data)
     if matches is None:
         return None
     groups = matches.groups()
-    message = groups[0]
-    ticket_id = int(groups[1])
-    signature = unquote_to_bytes(groups[2])
-    return (message, ticket_id, base64.b64decode(signature))
+    encoded = groups[0]
+    event_name = groups[1]
+    event_date = str_to_date(groups[2])
+    ticket_id = int(groups[3])
+    signature = unquote_to_bytes(groups[4])
+    return DecodeResult(encoded, event_name, event_date, ticket_id, base64.b64decode(signature))
 
 
 class CameraCapture:

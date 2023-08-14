@@ -3,6 +3,7 @@ import queue
 from enum import Enum
 import threading
 from typing import Callable, Generic, List, Optional, TypeVar
+from .event_characteristics import EventCharacteristics
 
 
 class EventType(Enum):
@@ -12,7 +13,7 @@ class EventType(Enum):
     SET_KEY_PATH = 2
     SET_LOG_DIR = 3
     SET_CAMERA = 4
-    SET_EVENT_NAME = 5
+    CONFIGURATION_FINISHED = 5
 
 
 class Event:
@@ -99,26 +100,27 @@ class SetCameraEventHandler(EventHandler[SetCameraEvent]):
     def __init__(self, handler: Callable[[SetCameraEvent], None]) -> None:
         super().__init__(handler, EventType.SET_CAMERA)
 
-class SetEventNameEvent(Event):
+
+class ConfigurationFinishedEvent(Event):
     """Event signaling an event name change"""
 
-    def __init__(self, event_name: str) -> None:
-        super().__init__(EventType.SET_EVENT_NAME)
-        self.event_name = event_name
+    def __init__(self, event_characteristics: EventCharacteristics) -> None:
+        super().__init__(EventType.CONFIGURATION_FINISHED)
+        self.event_characteristics = event_characteristics
 
 
-class SetEventNameEventHandler(EventHandler[SetEventNameEvent]):
-    """SetEventNameEventHandler"""
+class ConfigurationFinishedEventHandler(EventHandler[ConfigurationFinishedEvent]):
+    """ConfigurationFinishedEventHandler"""
 
-    def __init__(self, handler: Callable[[SetEventNameEvent], None]) -> None:
-        super().__init__(handler, EventType.SET_EVENT_NAME)
+    def __init__(self, handler: Callable[[ConfigurationFinishedEvent], None]) -> None:
+        super().__init__(handler, EventType.CONFIGURATION_FINISHED)
 
 
 EventHandlers = ProcessFrameEventHandler | \
     SetKeyPathEventHandler | \
     SetLogDirEventHandler | \
     SetCameraEventHandler | \
-    SetEventNameEventHandler
+    ConfigurationFinishedEventHandler
 
 
 class EventProcessor:
@@ -148,6 +150,7 @@ class EventProcessor:
 
     def stop(self) -> None:
         self.stop_requested = True
-        self.push(Event(EventType.DUMMY)) # make sure thread is not blocked by get()
+        # make sure thread is not blocked by get()
+        self.push(Event(EventType.DUMMY))
         if self.processor_thread is not None:
             self.processor_thread.join()

@@ -1,8 +1,10 @@
 import time
+from typing import Optional
 from scanner_lib.signature_validator import SignatureValidator
 from scanner_lib.display_utils import QrCodeImageDrawer
 from scanner_lib.id_storage import IdStorage
 from scanner_lib.qr import decode_message, read, CameraCapture
+from scanner_lib.event_characteristics import EventCharacteristics
 
 
 class Scanner:
@@ -16,7 +18,7 @@ class Scanner:
         self.validator = validator
         self.qr_code_image_drawer = qr_code_image_drawer
         self.storage = storage
-        self.event_name = ""
+        self.event_characteristics: Optional[EventCharacteristics] = None
 
     def process_frame(self, origin_time: float) -> None:
         if time.time() - origin_time > 1:
@@ -32,23 +34,26 @@ class Scanner:
             self.qr_code_image_drawer.show_frame_denied(
                 frame, ("Wrong format", frame_points))
             return
-        message, ticket_id, signature = decode_result
-        if message != self.event_name:
+        if self.event_characteristics is not None and decode_result.event_name != self.event_characteristics.name:
             self.qr_code_image_drawer.show_frame_denied(
                 frame, ("Wrong event name", frame_points))
             return
+        if self.event_characteristics is not None and decode_result.event_date != self.event_characteristics.date:
+            self.qr_code_image_drawer.show_frame_denied(
+                frame, ("Wrong event date", frame_points))
+            return
         is_verified = self.validator.verify_message(
-            f"{message}_{ticket_id}", signature)
+            decode_result.encoded, decode_result.signature)
         if not is_verified:
             self.qr_code_image_drawer.show_frame_denied(
                 frame, ("Invalid signature", frame_points))
             return
-        if not self.storage.try_add_id(ticket_id):
+        if not self.storage.try_add_id(decode_result.ticket_id):
             self.qr_code_image_drawer.show_frame_denied(
                 frame, ("Duplicate ID", frame_points))
             return
         self.qr_code_image_drawer.show_frame_verified(
-            frame, (message, ticket_id, frame_points))
+            frame, (decode_result.event_name, decode_result.ticket_id, frame_points))
 
-    def set_event_name(self, event_name: str) -> None:
-        self.event_name = event_name
+    def set_event_characteristics(self, event_characteristics: EventCharacteristics) -> None:
+        self.event_characteristics = event_characteristics

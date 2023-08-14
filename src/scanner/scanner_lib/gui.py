@@ -3,10 +3,12 @@ import sys
 from pathlib import Path
 from threading import Lock
 from typing import Any, Callable, Optional, List
-
+from datetime import date, datetime
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
+
+from scanner_lib.event_characteristics import EventCharacteristics
 from .config import Config
 
 
@@ -42,19 +44,31 @@ class StartWindow(QtWidget.QWidget):
         self.event_name_edit.editingFinished.connect(self._on_event_name_set)
         self.widget_layout.addWidget(self.event_name_edit)
 
+    def _init_event_date_edit(self) -> None:
+        self.event_date_edit = QtWidget.QDateEdit()
+        event_date = self.event_characteristics.date
+        default_date = QtCore.QDate(
+            event_date.year, event_date.month, event_date.day)
+        self.event_date_edit.setDate(default_date)
+        self.event_date_edit.editingFinished.connect(self._on_event_date_set)
+        self.widget_layout.addWidget(self.event_date_edit)
+
     def _init_ok_button(self) -> None:
         self.start_button = QtWidget.QPushButton('Ok')
         self.start_button.setEnabled(True)
         self.start_button.clicked.connect(self._on_ok_button_pressed)
         self.widget_layout.addWidget(self.start_button)
 
-    def __init__(self, on_accepted_callback: Callable[[str], None], on_closed_callback: Callable[[], None]) -> None:
+    def __init__(self, on_accepted_callback: Callable[[EventCharacteristics], None], on_closed_callback: Callable[[], None]) -> None:
         super().__init__()
+        self.event_characteristics = EventCharacteristics(
+            "", datetime.today().date())
         self.setWindowTitle("ACR QR-Code Scanner")
         self.widget_layout = QtWidget.QVBoxLayout()
         self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsname'))
         self._init_event_name_edit()
-        self.event_name = ""
+        self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsdatum'))
+        self._init_event_date_edit()
         self.on_accepted_callback = on_accepted_callback
         self.on_closed_callback = on_closed_callback
         self._init_ok_button()
@@ -62,11 +76,16 @@ class StartWindow(QtWidget.QWidget):
 
     def _on_ok_button_pressed(self) -> None:
         if self.on_accepted_callback is not None:
-            self.on_accepted_callback(self.event_name)
+            self.on_accepted_callback(self.event_characteristics)
         self.hide()
 
     def _on_event_name_set(self) -> None:
-        self.event_name = self.event_name_edit.text()
+        self.event_characteristics.name = self.event_name_edit.text()
+
+    def _on_event_date_set(self) -> None:
+        set_date = self.event_date_edit.date()
+        self.event_characteristics.date = date(
+            set_date.year(), set_date.month(), set_date.day())
 
     # pylint: disable=invalid-name
     def closeEvent(self, close_event: QtGui.QCloseEvent) -> None:
@@ -110,9 +129,9 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
 
-    def _on_start_menu_accepted(self, event_name: str) -> None:
+    def _on_start_menu_accepted(self, characteristics: EventCharacteristics) -> None:
         if self.event_name_listener is not None:
-            self.event_name_listener(event_name)
+            self.event_name_listener(characteristics)
         self.timer.start()
         self.show()
 
@@ -174,7 +193,8 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.key_path_changed_listener: Optional[Callable[[Path], None]] = None
         self.log_dir_changed_listener: Optional[Callable[[Path], None]] = None
         self.camera_listener: Optional[Callable[[int], None]] = None
-        self.event_name_listener: Optional[Callable[[str], None]] = None
+        self.event_name_listener: Optional[Callable[[
+            EventCharacteristics], None]] = None
         self.config: Config = default_config
         self.camera_list = camera_list
 
@@ -209,7 +229,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def set_log_dir_changed_listener(self, log_dir_changed_listener: Callable[[Path], None]) -> None:
         self.log_dir_changed_listener = log_dir_changed_listener
 
-    def set_event_name_listener(self, event_name_listener: Callable[[str], None]) -> None:
+    def set_configuration_finished_listener(self, event_name_listener: Callable[[EventCharacteristics], None]) -> None:
         self.event_name_listener = event_name_listener
 
     def get_painter(self) -> ImagePainter:
@@ -218,7 +238,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
     def set_camera_listener(self, listener:  Callable[[int], None]) -> None:
         self.camera_listener = listener
 
-    def show_start_menu(self)-> None:
+    def show_start_menu(self) -> None:
         self.start_menu.show()
 
 
@@ -244,8 +264,8 @@ class ScannerGui:
     def set_camera_listener(self, camera_listener:  Callable[[int], None]) -> None:
         self.window.set_camera_listener(camera_listener)
 
-    def set_event_name_listener(self, event_name_listener: Callable[[str], None]) -> None:
-        self.window.set_event_name_listener(event_name_listener)
+    def set_configuration_finished_listener(self, event_name_listener: Callable[[EventCharacteristics], None]) -> None:
+        self.window.set_configuration_finished_listener(event_name_listener)
 
     def run(self) -> None:
         self.window.show_start_menu()

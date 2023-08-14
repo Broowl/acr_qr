@@ -59,7 +59,9 @@ class StartWindow(QtWidget.QWidget):
         self.start_button.clicked.connect(self._on_ok_button_pressed)
         self.widget_layout.addWidget(self.start_button)
 
-    def __init__(self, on_accepted_callback: Callable[[EventCharacteristics], None], on_closed_callback: Callable[[], None]) -> None:
+    def __init__(self,
+                 on_accepted_callback: Callable[[EventCharacteristics], None],
+                 on_closed_callback: Callable[[], None]) -> None:
         super().__init__()
         self.event_characteristics = EventCharacteristics(
             "", datetime.today().date())
@@ -158,7 +160,8 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
 
     def _init_key_path_menu(self) -> None:
         self.key_path_menu = QtWidget.QFileDialog(
-            directory=str(os.path.dirname(self.config.key_path)))
+            directory=str(os.path.dirname(self.config.key_path)),
+            filter="*.pem")
         self.key_path_menu.fileSelected.connect(self._set_key_path)
 
     def _init_image_frame(self) -> None:

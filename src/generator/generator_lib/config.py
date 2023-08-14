@@ -9,4 +9,4 @@ class Config:
     event_date: date
     num_qr_codes: int
     out_dir: Path
-    key_dir: Path
+    private_key_path: Path

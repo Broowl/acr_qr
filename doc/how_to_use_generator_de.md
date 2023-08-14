@@ -29,3 +29,12 @@ Der private key wird vom Generator genutzt um die QR-Codes digital zu signieren.
 Solltest du den private key an einem anderen Ort speichern wollen als der Standardordner ist dies möglich. Verschiebe dazu den private key einfach an den gewünschten Ort und wähle beim Start des Programms in der Infobox den *Importieren* Button um dem Programm mitzuteilen wo der private key sich befindet. Der festgelegt Ort wird bei Neustart des Programms wieder verwendet.
 
 Wie bereits oben erwähnt wird der public key vom Scanner benutzt um die Signatur in den QR-Codes zu überprüfen. Der public key muss dazu manuell auf das Gerät mit dem Scanner transferiert werden. Dieser Transfer ist, sofern sich der private key nicht ändert, nur einmal notwendig. Es macht also Sinn, den private key nicht unnötig neu zu generieren um nicht ständig den public key auf das Scanner Gerät transferieren zu müssen. Für den public key sind keine besonderen Schutzmaßnahmen notwendig. Er kann also bedenkenlos verteilt werden. 
+
+## 🔍 Technische Details
+Folgende Informationen sind in den generierten QR-Codes gespeichert:
+* Veranstaltungsname
+* Veranstaltungsdatum
+* ID
+* Signatur
+
+Veranstaltungsname und Veranstaltungsdatum dienen dazu die Veranstaltung eindeutig zu identifizieren. Die ID macht jedes Ticket einzigartig und verhindert, dass mehrere Personen den gleichen QR-Code verwenden können. Die Signatur verhindert, dass die QR-Codes gefälscht werden können.

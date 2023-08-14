@@ -12,7 +12,7 @@ class Generator:
         self.progress_indicator = progress_indicator
 
     def generate(self, gen_config: Config) -> None:
-        key = generate_or_get_keys(gen_config.key_dir)
+        key = generate_or_get_keys(gen_config.private_key_path)
         self.progress_indicator.set_maximum(gen_config.num_qr_codes)
         for i_code in range(gen_config.num_qr_codes):
             data = f"{gen_config.event_name}_{gen_config.event_date.strftime('%Y-%m-%d')}_{i_code}"

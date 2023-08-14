@@ -9,6 +9,7 @@ from io import TextIOWrapper
 class PersistedValues:
     """Storage for the persisted values"""
     out_dir: Path
+    key_path: Path
 
 
 class Persistence:
@@ -26,7 +27,8 @@ class Persistence:
                     content = file.read()
                     parsed = json.loads(content)
                     self.persisted_values = PersistedValues(
-                        Path(parsed["out_dir"]))
+                        Path(parsed["out_dir"]),
+                        Path(parsed["key_path"]))
                 except json.JSONDecodeError:
                     self._write(file)
         else:
@@ -41,11 +43,22 @@ class Persistence:
         with open(self.config_path, "w", encoding="utf-8") as file:
             self._write(file)
 
+    def persist_key_path(self, key_path: Path) -> None:
+        self.persisted_values.key_path = key_path
+        with open(self.config_path, "w", encoding="utf-8") as file:
+            self._write(file)
+
     def get_persisted_out_dir(self) -> Path:
         return self.persisted_values.out_dir
 
+    def get_persisted_key_path(self) -> Path:
+        return self.persisted_values.key_path
+
     def _write(self, file: TextIOWrapper) -> None:
         serialized = json.dumps(
-            {"out_dir": self.persisted_values.out_dir.as_posix()})
+            {
+                "out_dir": self.persisted_values.out_dir.as_posix(),
+                "key_path": self.persisted_values.key_path.as_posix()
+            })
         file.write(serialized)
         file.flush()

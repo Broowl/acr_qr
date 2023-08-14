@@ -14,13 +14,14 @@ from scanner_lib.event_processor import EventProcessor,\
     SetKeyPathEvent, SetKeyPathEventHandler, \
     SetLogDirEvent, SetLogDirEventHandler,\
     SetCameraEvent, SetCameraEventHandler, \
-    SetEventNameEvent, SetEventNameEventHandler
+    ConfigurationFinishedEvent, ConfigurationFinishedEventHandler
 from scanner_lib.scanner import Scanner
+from scanner_lib.event_characteristics import EventCharacteristics
 
 
-def on_set_event_name(scanner: Scanner, id_storage: IdStorage, name: str) -> None:
-    scanner.set_event_name(name)
-    id_storage.set_event_name(name)
+def on_configuration_finished(scanner: Scanner, id_storage: IdStorage, characteristics: EventCharacteristics) -> None:
+    scanner.set_event_characteristics(characteristics)
+    id_storage.set_event_characteristics(characteristics)
 
 
 def main() -> None:
@@ -71,7 +72,7 @@ def main() -> None:
             event_processor.register_processor(
                 SetCameraEventHandler(lambda event: camera_capture.set_camera(event.camera_index)))
             event_processor.register_processor(
-                SetEventNameEventHandler(lambda event: on_set_event_name(scanner, id_storage, event.event_name)))
+                ConfigurationFinishedEventHandler(lambda event: on_configuration_finished(scanner, id_storage, event.event_characteristics)))
 
             gui.set_timer_listener(
                 lambda: event_processor.push(ProcessFrameEvent(time.time())))
@@ -81,8 +82,8 @@ def main() -> None:
                 lambda log_dir: event_processor.push(SetLogDirEvent(log_dir)))
             gui.set_camera_listener(
                 lambda camera_index: event_processor.push(SetCameraEvent(camera_index)))
-            gui.set_event_name_listener(
-                lambda event_name: event_processor.push(SetEventNameEvent(event_name)))
+            gui.set_configuration_finished_listener(
+                lambda event_characteristics: event_processor.push(ConfigurationFinishedEvent(event_characteristics)))
 
             event_processor.start()
             gui.run()

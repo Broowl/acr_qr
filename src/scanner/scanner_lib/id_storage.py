@@ -8,6 +8,7 @@ from types import TracebackType
 from typing import Dict, Optional, Any
 import iso8601
 from .persistence import Persistence
+from .event_characteristics import EventCharacteristics
 
 
 class IdStorage:
@@ -20,7 +21,7 @@ class IdStorage:
         self.file: Optional[TextIOWrapper] = None
         self.writer: Optional[Any] = None
         self.persistence = persistence
-        self.event_name = "default"
+        self.event_characteristics: Optional[EventCharacteristics] = None
 
     def __enter__(self) -> Any:
         self._save_open()
@@ -47,8 +48,8 @@ class IdStorage:
         self._save_open()
         self.persistence.persist_log_dir(log_dir)
 
-    def set_event_name(self, event_name: str) -> None:
-        self.event_name = event_name
+    def set_event_characteristics(self, event_characteristics: EventCharacteristics) -> None:
+        self.event_characteristics = event_characteristics
         if self.file is not None:
             self.file.close()
         self._save_open()
@@ -64,9 +65,11 @@ class IdStorage:
         self.file.flush()
 
     def _save_open(self) -> None:
+        file_name = self._get_file_name()
+        if file_name is None:
+            return
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
-        file_name = self.log_dir / f"{self.event_name}.txt"
         # restore IDs from if log with the current event name exists and is less than 1 day old
         if os.path.exists(file_name) and time.time() - os.stat(file_name).st_mtime < 60*60*24:
             self.file = open(file_name, "r+", encoding="utf-8")
@@ -74,6 +77,12 @@ class IdStorage:
         else:
             self.file = open(file_name, "w", encoding="utf-8")
         self.writer = csv.writer(self.file, delimiter=',')
+
+    def _get_file_name(self) -> Path | None:
+        if self.event_characteristics is not None:
+            date_str = self.event_characteristics.date.strftime("%Y_%m_%d")
+            return self.log_dir / f"{date_str}_{self.event_characteristics.name}.txt"
+        return None
 
     def _read_file(self) -> None:
         if self.file is not None:

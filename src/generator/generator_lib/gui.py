@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from typing import Callable, Optional
+from datetime import date
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
@@ -60,6 +61,11 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.config.event_name = self.event_name_edit.text()
         self._enable_button()
 
+    def _on_event_date_set(self) -> None:
+        set_date = self.event_date_edit.date()
+        self.config.event_date = date(
+            set_date.year(), set_date.month(), set_date.day())
+
     def _on_num_qr_codes_set(self) -> None:
         self.config.num_qr_codes = int(self.num_qr_codes_edit.text())
         self._enable_button()
@@ -75,15 +81,15 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _on_open_key_dir_menu_triggered(self) -> None:
         open_folder(self.config.key_dir)
 
-    def _on_open_online_help_menu_triggered(self)->None:
+    def _on_open_online_help_menu_triggered(self) -> None:
         git_hub_url = QtCore.QUrl("https://github.com/Broowl/acr_qr")
         QtGui.QDesktopServices.openUrl(git_hub_url)
 
-    def _on_open_license_menu_triggered(self)->None:
+    def _on_open_license_menu_triggered(self) -> None:
         license_path = QtCore.QUrl("LICENSE")
         QtGui.QDesktopServices.openUrl(license_path)
 
-    def _on_open_about_menu_triggered(self)->None:
+    def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
 
     def _init_file_menu(self) -> None:
@@ -98,6 +104,14 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.event_name_edit.setText(self.config.event_name)
         self.event_name_edit.editingFinished.connect(self._on_event_name_set)
         self.widget_layout.addWidget(self.event_name_edit)
+
+    def _init_event_date_edit(self) -> None:
+        self.event_date_edit = QtWidget.QDateEdit()
+        default_date = QtCore.QDate(
+            self.config.event_date.year, self.config.event_date.month, self.config.event_date.day)
+        self.event_date_edit.setDate(default_date)
+        self.event_date_edit.editingFinished.connect(self._on_event_date_set)
+        self.widget_layout.addWidget(self.event_date_edit)
 
     def _init_num_qr_codes_edit(self) -> None:
         self.num_qr_codes_edit = QtWidget.QLineEdit('')
@@ -119,8 +133,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _init_out_dir_menu(self) -> None:
         self.out_dir_menu = QtWidget.QFileDialog(
             directory=str(self.config.out_dir))
-        
-    def _init_help_menu(self)-> None:
+
+    def _init_help_menu(self) -> None:
         help_menu = self.menuBar().addMenu("Hilfe")
         help_menu.addAction("Online Hilfe").triggered.connect(
             self._on_open_online_help_menu_triggered)
@@ -128,8 +142,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
             self._on_open_license_menu_triggered)
         help_menu.addAction("Über").triggered.connect(
             self._on_open_about_menu_triggered)
-        
-    def _init_about_message_box(self)->None:
+
+    def _init_about_message_box(self) -> None:
         self.about_box = QtWidget.QMessageBox()
         self.about_box.setText("Autor: Daniel Krieger<br>Version: 1.0.0")
         self.about_box.setWindowTitle("Über ACR QR-Code Generator")
@@ -146,6 +160,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_file_menu()
         self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsname'))
         self._init_event_name_edit()
+        self.widget_layout.addWidget(QtWidget.QLabel('Veranstaltungsdatum'))
+        self._init_event_date_edit()
         self.widget_layout.addWidget(QtWidget.QLabel('Anzahl QR-Codes'))
         self._init_num_qr_codes_edit()
         self._init_start_button()
@@ -160,14 +176,15 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         widget.setLayout(self.widget_layout)
 
         self.setCentralWidget(widget)
-        self.setFixedSize(QtCore.QSize(600, 300))
+        self.setFixedSize(QtCore.QSize(
+            int(self.size().width()*1.3), int(self.size().height() * 0.8)))
 
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.callback = generator
 
     def get_progress_indicator(self) -> ProgressIndicator:
         return self.progress_indicator
-    
+
     def set_out_dir_listener(self, listener: Callable[[Path], None]) -> None:
         self.out_dir_listener = listener
 

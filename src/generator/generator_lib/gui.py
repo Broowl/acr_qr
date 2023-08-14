@@ -159,7 +159,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
 
     def _init_about_message_box(self) -> None:
         self.about_box = QtWidget.QMessageBox()
-        self.about_box.setText("Autor: Daniel Krieger<br>Version: 1.0.0")
+        self.about_box.setText("Autor: Daniel Krieger<br>Version: 0.9.0")
         self.about_box.setWindowTitle("Über ACR QR-Code Generator")
 
     def _init_welcome_box(self) -> None:

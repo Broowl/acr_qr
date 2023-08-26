@@ -76,10 +76,12 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
             self.callback(self.config)
 
     def _on_select_out_dir_menu_triggered(self) -> None:
-        self.config.out_dir = Path(self.out_dir_dialog.getExistingDirectory())
-        self.progress_indicator.out_dir = self.config.out_dir
-        if self.out_dir_listener is not None:
-            self.out_dir_listener(self.config.out_dir)
+        selected_out_dir = Path(self.out_dir_dialog.getExistingDirectory())
+        if len(selected_out_dir.name) != 0:
+            self.config.out_dir = selected_out_dir
+            self.progress_indicator.out_dir = self.config.out_dir
+            if self.out_dir_listener is not None:
+                self.out_dir_listener(self.config.out_dir)
 
     def _on_open_key_dir_menu_triggered(self) -> None:
         open_folder(self.config.private_key_path.parent)
@@ -94,6 +96,10 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
 
     def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
+
+    def _on_generate_key_button_pressed(self)-> None:
+        if self.key_writer is not None:
+            self.key_writer(self.config.private_key_path)
 
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
@@ -168,6 +174,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.welcome_box.setText("Es wurde keine private key Datei gefunden.")
         generate_button = QtWidget.QPushButton()
         generate_button.setText("Neu generieren")
+        generate_button.clicked.connect(self._on_generate_key_button_pressed)
         self.welcome_box.addButton(
             generate_button, QtWidget.QMessageBox.ButtonRole.ActionRole)
         import_button = QtWidget.QPushButton()
@@ -182,6 +189,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         super().__init__()
 
         self.callback: Optional[Callable[[Config], None]] = None
+        self.key_writer: Optional[Callable[[Path], None]] = None
         self.out_dir_listener: Optional[Callable[[Path], None]] = None
         self.key_path_listener: Optional[Callable[[Path], None]] = None
         self.config: Config = default_config
@@ -217,6 +225,9 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.callback = generator
 
+    def set_key_writer(self, writer: Callable[[Path],None])->None:
+        self.key_writer = writer
+
     def get_progress_indicator(self) -> ProgressIndicator:
         return self.progress_indicator
 
@@ -236,6 +247,9 @@ class GeneratorGui:
 
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.window.set_generator(generator)
+
+    def set_key_writer(self, writer: Callable[[Path],None])->None:
+        self.window.set_key_writer(writer)
 
     def get_progress_indicator(self) -> ProgressIndicator:
         return self.window.get_progress_indicator()

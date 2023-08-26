@@ -6,6 +6,7 @@ from generator_lib.persistence import Persistence, PersistedValues
 from generator_lib.config import Config
 from generator_lib.gui import GeneratorGui
 from generator_lib.generator import Generator
+from generator_lib.signing import write_keys
 
 
 def main() -> None:
@@ -54,6 +55,7 @@ def main() -> None:
     generator = Generator(progress_indicator)
 
     gui.set_generator(generator.generate)
+    gui.set_key_writer(write_keys)
     gui.set_out_dir_listener(persistence.persist_out_dir)
     gui.set_key_path_listener(persistence.persist_key_path)
     gui.run()

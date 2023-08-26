@@ -11,17 +11,20 @@ def save_key(key: RSA.RsaKey, file_name: str) -> None:
         file_out.close()
 
 
-def generate_or_get_keys(private_key_path: Path) -> RSA.RsaKey:
-    if not os.path.exists(private_key_path.parent):
-        os.makedirs(private_key_path.parent)
+def read_key(private_key_path: Path) -> RSA.RsaKey:
     if not os.path.exists(private_key_path):
-        key = RSA.generate(1024)
-        save_key(key, str(private_key_path))
-        file_name_public = str(private_key_path.parent / "public.pem")
-        save_key(key.public_key(), file_name_public)
-        return key
+        write_keys(private_key_path)
     with open(private_key_path, "rb") as private_key_file:
         return RSA.import_key(private_key_file.read())
+
+
+def write_keys(private_key_path: Path) -> None:
+    if not os.path.exists(private_key_path.parent):
+        os.makedirs(private_key_path.parent)
+    key = RSA.generate(1024)
+    save_key(key, str(private_key_path))
+    file_name_public = str(private_key_path.parent / "public.pem")
+    save_key(key.public_key(), file_name_public)
 
 
 def sign_message(message: str, private_key: RSA.RsaKey) -> bytes:

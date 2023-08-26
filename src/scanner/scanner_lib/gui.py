@@ -99,20 +99,20 @@ class StartWindow(QtWidget.QWidget):
 class ScannerQtMainWindow(QtWidget.QMainWindow):
     """Class representing the QT GUI window"""
 
-    def _set_log_dir(self, file: str) -> None:
-        file_path = Path(file)
+    def _set_log_dir(self, file_path: Path) -> None:
         self.config.log_dir = file_path
         if self.log_dir_changed_listener is not None:
             self.log_dir_changed_listener(file_path)
 
-    def _set_key_path(self, file: str) -> None:
-        file_path = Path(file)
+    def _set_key_path(self, file_path: Path) -> None:
         self.config.key_path = file_path
         if self.key_path_changed_listener is not None:
             self.key_path_changed_listener(file_path)
 
     def _on_select_log_folder_menu_triggered(self) -> None:
-        self._set_log_dir(self.log_folder_menu.getExistingDirectory())
+        selected_log_dir = Path(self.log_folder_menu.getExistingDirectory())
+        if len(selected_log_dir.name) != 0:
+            self._set_log_dir(selected_log_dir)
 
     def _on_select_key_path_menu_triggered(self) -> None:
         self.key_path_menu.show()
@@ -163,7 +163,7 @@ class ScannerQtMainWindow(QtWidget.QMainWindow):
         self.key_path_menu = QtWidget.QFileDialog(
             directory=str(os.path.dirname(self.config.key_path)),
             filter="*.pem")
-        self.key_path_menu.fileSelected.connect(self._set_key_path)
+        self.key_path_menu.fileSelected.connect(lambda p: self._set_key_path(Path(p)))
 
     def _init_image_frame(self) -> None:
         image_label = QtWidget.QLabel()

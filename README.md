@@ -10,7 +10,7 @@ The documentation on how to use the programms can be found [here](doc). Currentl
 
 1. Install pipenv with `pip install --user pipenv`
 2. Install mypy with `pip install --user mypy` and make sure the mypy daemon is on *PATH*.
-3. Run `pipenv sync` to install the required dependencies
+3. Run `pipenv sync` and `pipenv sync -d` to install the required dependencies
 4. Open the project in VS Code
 5. Install the recommended extensions
 6. Select the *pipenv* as Python interpreter

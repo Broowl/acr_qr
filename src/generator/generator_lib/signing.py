@@ -1,9 +1,11 @@
 import os
+import base64
+from urllib.parse import quote
 from pathlib import Path
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 from Crypto.Hash import SHA256
-
+from . import qr
 
 def save_key(key: RSA.RsaKey, file_name: str) -> None:
     with open(file_name, "wb") as file_out:
@@ -24,7 +26,12 @@ def write_keys(private_key_path: Path) -> None:
     key = RSA.generate(1024)
     save_key(key, str(private_key_path))
     file_name_public = str(private_key_path.parent / "public.pem")
+    file_name_public_qr = str(private_key_path.parent / "public.png")
     save_key(key.public_key(), file_name_public)
+    pem_lines = key.public_key().export_key().splitlines()
+    raw_key = bytes().join(pem_lines[1:-1])
+    encoded_key = quote(base64.b64encode(raw_key))
+    qr.save(encoded_key, file_name_public_qr)
 
 
 def sign_message(message: str, private_key: RSA.RsaKey) -> bytes:

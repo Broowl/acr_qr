@@ -34,45 +34,50 @@ def save_png(data: str, png_file_name: str) -> None:
     img = qrcode.make(data)
     img.save(png_file_name)
 
+class TicketWriter:
+    """Class for writing tickets"""
+    def __init__(self, flyer_file_name: Path | None) -> None:
+        if flyer_file_name is not None:
+            self.reader = reportlab.pdfgen.canvas.ImageReader(flyer_file_name)
+        else:
+            self.reader = None
 
-def save_pdf(svg_file_name: str, pdf_file_name: str, flyer_file_name: Path | None) -> None:
-    border_size = 10
-    remove_existing_file(pdf_file_name)
-    canvas = reportlab.pdfgen.canvas.Canvas(pdf_file_name)
-    qr_drawing = svglib.svglib.svg2rlg(svg_file_name)
-    scale = 298/(qr_drawing.height + 2 * border_size)  # scale to width of A5
-    qr_drawing_size = qr_drawing.height * scale
-    qr_drawing.scale(scale, scale)
-    reportlab.graphics.renderPDF.draw(
-        qr_drawing, canvas=canvas, x=border_size, y=border_size)
-    if flyer_file_name is not None:
-        reader = reportlab.pdfgen.canvas.ImageReader(flyer_file_name)
-        flyer_size = reader.getSize()
-        scaled_flyer_size = [qr_drawing_size, flyer_size[1]
-                             * (qr_drawing_size / flyer_size[0])]
-        canvas.drawImage(reader, x=border_size, y=qr_drawing_size + 2 * border_size,
-                         width=scaled_flyer_size[0], height=scaled_flyer_size[1])
-        canvas.setPageSize(
-            [qr_drawing_size + 2 * border_size,  qr_drawing_size + 3 * border_size + scaled_flyer_size[1]])
-    else:
-        canvas.setPageSize(
-            [qr_drawing_size + 2 * border_size,  qr_drawing_size + 2 * border_size])
-    canvas.save()
+    def _convert_svg_to_ticket_pdf(self, svg_file_name: str, pdf_file_name: str) -> None:
+        border_size = 10
+        remove_existing_file(pdf_file_name)
+        canvas = reportlab.pdfgen.canvas.Canvas(pdf_file_name)
+        qr_drawing = svglib.svglib.svg2rlg(svg_file_name)
+        scale = 298/(qr_drawing.height + 2 * border_size)  # scale to width of A5
+        qr_drawing_size = qr_drawing.height * scale
+        qr_drawing.scale(scale, scale)
+        reportlab.graphics.renderPDF.draw(
+            qr_drawing, canvas=canvas, x=border_size, y=border_size)
+        if self.reader is not None:
+            flyer_size = self.reader.getSize()
+            scaled_flyer_size = [qr_drawing_size, flyer_size[1]
+                                 * (qr_drawing_size / flyer_size[0])]
+            canvas.drawImage(self.reader, x=border_size, y=qr_drawing_size + 2 * border_size,
+                             width=scaled_flyer_size[0], height=scaled_flyer_size[1])
+            canvas.setPageSize(
+                [qr_drawing_size + 2 * border_size,  qr_drawing_size + 3 * border_size + scaled_flyer_size[1]])
+        else:
+            canvas.setPageSize(
+                [qr_drawing_size + 2 * border_size,  qr_drawing_size + 2 * border_size])
+        canvas.save()
 
 
-def save_ticket(data: str, file_name: str, flyer_file_name: Path | None) -> None:
-    create_parent_directories(file_name)
-    svg_file_name = f"{file_name}.svg"
-    save_svg(data, svg_file_name)
-    pdf_file_name = f"{file_name}.pdf"
-    save_pdf(svg_file_name, pdf_file_name, flyer_file_name)
-    remove_existing_file(svg_file_name)
+    def save_ticket(self, data: str, file_name: str) -> None:
+        create_parent_directories(file_name)
+        svg_file_name = f"{file_name}.svg"
+        save_svg(data, svg_file_name)
+        pdf_file_name = f"{file_name}.pdf"
+        self._convert_svg_to_ticket_pdf(svg_file_name, pdf_file_name)
+        remove_existing_file(svg_file_name)
 
 
 def save_public_key(data: str, file_name: str) -> None:
     create_parent_directories(file_name)
-    png_file_name = f"{file_name}.png"
-    save_png(data, png_file_name)
+    save_png(data, file_name)
 
 
 def add_signature_to_message(message: str, signature: bytes) -> str:

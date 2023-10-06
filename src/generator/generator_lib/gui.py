@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import Callable, Optional
 from datetime import date
+from threading import Lock
 
 import PyQt5.QtWidgets as QtWidget
 import PyQt5.QtCore as QtCore
@@ -24,6 +25,8 @@ class ProgressIndicator:
         self.start_button = start_button
         self.out_dir = out_dir
         self._init_message_box()
+        self.progress = 0
+        self.lock = Lock()
 
     def _init_message_box(self) -> None:
         self.box = QtWidget.QMessageBox()
@@ -39,10 +42,16 @@ class ProgressIndicator:
         self.progress_bar.setMaximum(progress_max)
 
     def set_progress(self, progress: int) -> None:
-        self.progress_bar.setValue(progress + 1)
+        with self.lock:
+            self.progress = progress
+
+    def update_progress(self) -> bool:
+        self.progress_bar.setValue(self.progress + 1)
         if self.progress_bar.value() == self.progress_bar.maximum():
             self.box.show()
             self.start_button.setEnabled(True)
+            return True
+        return False
 
 
 class GeneratorQtMainWindow(QtWidget.QMainWindow):
@@ -75,14 +84,17 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._enable_button()
 
     def _on_start_button_pressed(self) -> None:
+        self.progress_poll_timer.start()
         self.start_button.setEnabled(False)
         if self.callback is not None:
             self.callback(self.config)
 
     def _on_browse_flyer_button_pressed(self) -> None:
+        self.flyer_selection_dialog.setDirectory(str(Path.home()))
         self.flyer_selection_dialog.show()
 
     def _on_select_out_dir_menu_triggered(self) -> None:
+        self.out_dir_dialog.setDirectory(str(self.config.out_dir))
         selected_out_dir = Path(self.out_dir_dialog.getExistingDirectory())
         if len(selected_out_dir.name) != 0:
             self.config.out_dir = selected_out_dir
@@ -107,6 +119,10 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _on_generate_key_button_pressed(self) -> None:
         if self.key_writer is not None:
             self.key_writer(self.config.private_key_path)
+
+    def _on_poll_for_progress(self) -> None:
+        if self.progress_indicator.update_progress():
+            self.progress_poll_timer.stop()
 
     def _init_file_menu(self) -> None:
         file_menu = self.menuBar().addMenu("Datei")
@@ -141,7 +157,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.browse_flyer_button.setMaximumSize(100, 25)
         self.browse_flyer_button.clicked.connect(
             self._on_browse_flyer_button_pressed)
-        self.flyer_selection_dialog = QtWidget.QFileDialog()
+        self.flyer_selection_dialog = QtWidget.QFileDialog(
+            filter="Images (*.png *.jpg *.HEIC)")
         self.flyer_selection_dialog.fileSelected.connect(self._set_flyer_path)
         self.widget_layout.addWidget(self.browse_flyer_button)
         self.flyer_selected_label: QtWidget.QLabel = QtWidget.QLabel('')
@@ -156,10 +173,14 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _init_progress_bar(self) -> None:
         self.progress_bar = QtWidget.QProgressBar()
         self.widget_layout.addWidget(self.progress_bar)
+        self.progress_indicator = ProgressIndicator(
+            self.progress_bar, self.start_button, self.config.out_dir)
+        self.progress_poll_timer = QtCore.QTimer()
+        self.progress_poll_timer.setInterval(1000)
+        self.progress_poll_timer.timeout.connect(self._on_poll_for_progress)
 
     def _init_out_dir_dialog(self) -> None:
-        self.out_dir_dialog = QtWidget.QFileDialog(
-            directory=str(self.config.out_dir))
+        self.out_dir_dialog = QtWidget.QFileDialog()
 
     def _init_key_dir_dialog(self) -> None:
         self.key_dir_dialog = QtWidget.QFileDialog(
@@ -228,8 +249,6 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_out_dir_dialog()
         self._init_help_menu()
         self._init_about_message_box()
-        self.progress_indicator = ProgressIndicator(
-            self.progress_bar, self.start_button, self.config.out_dir)
         self._init_key_dir_dialog()
         self._init_key_import_dialog()
         self._init_welcome_box()

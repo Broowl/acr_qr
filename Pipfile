@@ -11,6 +11,8 @@ numpy = "*"
 opencv-python = "*"
 pycryptodome = "*"
 iso8601 = "*"
+reportlab = "*"
+svglib = "*"
 
 [dev-packages]
 mypy = "*"

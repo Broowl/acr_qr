@@ -48,7 +48,7 @@ def main() -> None:
         num_codes = parsed_args.num_codes
 
     initial_config = Config(event_name, event_date,
-                            num_codes, out_dir, private_key_path)
+                            num_codes, out_dir, private_key_path, None)
 
     gui = GeneratorGui(initial_config)
     progress_indicator = gui.get_progress_indicator()

@@ -31,7 +31,7 @@ def write_keys(private_key_path: Path) -> None:
     pem_lines = key.public_key().export_key().splitlines()
     raw_key = bytes().join(pem_lines[1:-1])
     encoded_key = quote(base64.b64encode(raw_key))
-    qr.save(encoded_key, file_name_public_qr)
+    qr.save_public_key(encoded_key, file_name_public_qr)
 
 
 def sign_message(message: str, private_key: RSA.RsaKey) -> bytes:

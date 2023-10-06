@@ -2,7 +2,7 @@ import os
 from generator_lib.signing import read_key, sign_message
 from generator_lib.config import Config
 from generator_lib.gui import ProgressIndicator
-from generator_lib.qr import save_signed_message
+from generator_lib.qr import save_ticket, add_signature_to_message
 
 
 class Generator:
@@ -18,7 +18,9 @@ class Generator:
             data = f"{gen_config.event_name}_{gen_config.event_date.strftime('%Y-%m-%d')}_{i_code}"
             signature = sign_message(data, key)
             folder_name = f"{gen_config.event_date.strftime('%Y-%m-%d')}_{gen_config.event_name}"
-            file_name = f"{folder_name}_{i_code}.png"
-            save_signed_message(data, signature, os.path.join(
-                gen_config.out_dir, folder_name, file_name))
+            file_name = f"{folder_name}_{i_code}"
+            file_path = os.path.join(
+                gen_config.out_dir, folder_name, file_name)
+            signed = add_signature_to_message(data, signature)
+            save_ticket(signed, file_path, gen_config.flyer_file_name)
             self.progress_indicator.set_progress(i_code)

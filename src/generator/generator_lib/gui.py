@@ -57,6 +57,10 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         if self.key_path_listener is not None:
             self.key_path_listener(self.config.private_key_path)
 
+    def _set_flyer_path(self, flyer_path: str) -> None:
+        self.flyer_selected_label.setText(flyer_path)
+        self.config.flyer_file_name = Path(flyer_path)
+
     def _on_event_name_set(self) -> None:
         self.config.event_name = self.event_name_edit.text()
         self._enable_button()
@@ -74,6 +78,9 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.start_button.setEnabled(False)
         if self.callback is not None:
             self.callback(self.config)
+
+    def _on_browse_flyer_button_pressed(self) -> None:
+        self.flyer_selection_dialog.show()
 
     def _on_select_out_dir_menu_triggered(self) -> None:
         selected_out_dir = Path(self.out_dir_dialog.getExistingDirectory())
@@ -97,7 +104,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def _on_open_about_menu_triggered(self) -> None:
         self.about_box.show()
 
-    def _on_generate_key_button_pressed(self)-> None:
+    def _on_generate_key_button_pressed(self) -> None:
         if self.key_writer is not None:
             self.key_writer(self.config.private_key_path)
 
@@ -128,6 +135,17 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.num_qr_codes_edit.editingFinished.connect(
             self._on_num_qr_codes_set)
         self.widget_layout.addWidget(self.num_qr_codes_edit)
+
+    def _init_flyer_edit(self) -> None:
+        self.browse_flyer_button = QtWidget.QPushButton('Auswahl')
+        self.browse_flyer_button.setMaximumSize(100, 25)
+        self.browse_flyer_button.clicked.connect(
+            self._on_browse_flyer_button_pressed)
+        self.flyer_selection_dialog = QtWidget.QFileDialog()
+        self.flyer_selection_dialog.fileSelected.connect(self._set_flyer_path)
+        self.widget_layout.addWidget(self.browse_flyer_button)
+        self.flyer_selected_label: QtWidget.QLabel = QtWidget.QLabel('')
+        self.widget_layout.addWidget(self.flyer_selected_label)
 
     def _init_start_button(self) -> None:
         self.start_button = QtWidget.QPushButton('Start')
@@ -203,6 +221,8 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_event_date_edit()
         self.widget_layout.addWidget(QtWidget.QLabel('Anzahl QR-Codes'))
         self._init_num_qr_codes_edit()
+        self.widget_layout.addWidget(QtWidget.QLabel('Flyer'))
+        self._init_flyer_edit()
         self._init_start_button()
         self._init_progress_bar()
         self._init_out_dir_dialog()
@@ -225,7 +245,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.callback = generator
 
-    def set_key_writer(self, writer: Callable[[Path],None])->None:
+    def set_key_writer(self, writer: Callable[[Path], None]) -> None:
         self.key_writer = writer
 
     def get_progress_indicator(self) -> ProgressIndicator:
@@ -248,7 +268,7 @@ class GeneratorGui:
     def set_generator(self, generator: Callable[[Config], None]) -> None:
         self.window.set_generator(generator)
 
-    def set_key_writer(self, writer: Callable[[Path],None])->None:
+    def set_key_writer(self, writer: Callable[[Path], None]) -> None:
         self.window.set_key_writer(writer)
 
     def get_progress_indicator(self) -> ProgressIndicator:

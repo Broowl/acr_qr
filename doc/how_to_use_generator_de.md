@@ -7,8 +7,9 @@ Der Generator erstellt QR-Codes, die als E-Tickets für Veranstaltungen genutzt 
 1. Starte das Programm *ACR_QR_Generator.exe*
 2. Klicke den *Neu generieren* Button in der geöffneten Infobox
 3. Lege den Namen der Veranstaltung, das Datum* und die Anzahl der gewünschten QR-Codes fest
-4. Drücke den *Start* Button, um die Generierung zu starten
-5. Wenn die Generierung abgeschlossen ist, kann der Ausgabeordner über die Infobox geöffnet werden
+4. Optional: Wähle eine Grafik, z.B. das Flyer der Veranstaltung, aus.
+5. Drücke den *Start* Button, um die Generierung zu starten
+6. Wenn die Generierung abgeschlossen ist, kann der Ausgabeordner über die Infobox geöffnet werden
 
 \* Sollte die Veranstaltung auf ein anderes Datum verschoben werden ist dies nicht weiter schlimm. Es muss dann im Scanner lediglich das ursprüngliche Veranstaltungsdatum konfiguriert werden. 
 

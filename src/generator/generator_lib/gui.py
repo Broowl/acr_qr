@@ -175,7 +175,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self.widget_layout.addWidget(self.progress_bar)
         self.progress_indicator = ProgressIndicator(
             self.progress_bar, self.start_button, self.config.out_dir)
-        self.progress_poll_timer = QtCore.QTimer()
+        self.progress_poll_timer: QtCore.QTimer = QtCore.QTimer()
         self.progress_poll_timer.setInterval(1000)
         self.progress_poll_timer.timeout.connect(self._on_poll_for_progress)
 
@@ -242,7 +242,7 @@ class GeneratorQtMainWindow(QtWidget.QMainWindow):
         self._init_event_date_edit()
         self.widget_layout.addWidget(QtWidget.QLabel('Anzahl QR-Codes'))
         self._init_num_qr_codes_edit()
-        self.widget_layout.addWidget(QtWidget.QLabel('Flyer'))
+        self.widget_layout.addWidget(QtWidget.QLabel('Flyer (optional)'))
         self._init_flyer_edit()
         self._init_start_button()
         self._init_progress_bar()
